@@ -1,0 +1,72 @@
+{
+    "name": "antoninom90/slim4-doctrine-skeleton",
+    "description": "Slim Framework 4 Skeleton Application with Doctrine ORM 2",
+    "keywords": [
+        "slim",
+        "microframework",
+        "rest",
+        "doctrine",
+        "router",
+        "psr7"
+    ],
+    "homepage": "http://github.com/AntoninoM90/slim4-doctrine-skeleton",
+    "type": "template",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Josh Lockhart",
+            "email": "info@joshlockhart.com",
+            "homepage": "http://www.joshlockhart.com/"
+        },
+        {
+            "name": "Pierre Berube",
+            "email": "pierre@lgse.com",
+            "homepage": "http://www.lgse.com/"
+        },
+        {
+            "name": "Antonino M. (@AntoninoM90)",
+            "homepage": "https://antoninom90.altervista.org/"
+        }
+    ],
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "ext-json": "*",
+        "doctrine/annotations": "2.*",
+        "doctrine/cache": "^2.2.0",
+        "doctrine/doctrine-bundle": "^2.13",
+        "doctrine/orm": "^2",
+        "monolog/monolog": "^2.9|^3.7",
+        "php-di/php-di": "^6.4|^7.0",
+        "slim/psr7": "^1.6|^1.7",
+        "slim/slim": "^4.14"
+    },
+    "require-dev": {
+        "jangregor/phpstan-prophecy": "^1.0.2",
+        "phpspec/prophecy-phpunit": "^2.2",
+        "phpstan/extension-installer": "^1.4.3",
+        "phpstan/phpstan": "^1.12",
+        "phpunit/phpunit": "^9.6.19",
+        "squizlabs/php_codesniffer": "^3.10"
+    },
+    "config": {
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        },
+        "process-timeout": 0,
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "start": "php -S localhost:8080 -t public",
+        "test": "phpunit"
+    }
+}
