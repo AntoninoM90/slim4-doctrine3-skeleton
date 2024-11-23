@@ -11,36 +11,54 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
 use JsonSerializable;
 
-/**
- * @Entity()
- * @Table(name="user")
- */
+#[
+    Entity(),
+    Table(name: "user")
+]
 class User implements JsonSerializable
 {
-    /**
-     * @Id
-     * @Column(name="id", type="integer", unique="true", nullable="true")
-     * @GeneratedValue("IDENTITY")
-     */
+    #[Id, Column(
+        name: 'id',
+        type: 'integer',
+        length: 18,
+        unique: true,
+        nullable: false
+    ), GeneratedValue('IDENTITY')]
     private ?int $id;
 
-    /**
-     * @Column(name="username", type="string", length="40", unique=true, nullable=false)
-     */
+    #[Column(
+        name: 'username',
+        type: 'string',
+        length: 48,
+        unique: true,
+        nullable: false
+    )]
     private string $username;
 
-    /**
-     * @Column(name="first_name", type="string", length="40", unique=false, nullable=false)
-     */
+    #[Column(
+        name: 'first_name',
+        type: 'string',
+        length: 40,
+        unique: false,
+        nullable: false
+    )]
     private string $firstName;
 
-    /**
-     * @Column(name="last_name", type="string", length="40", unique=false, nullable=false)
-     */
+    #[Column(
+        name: 'last_name',
+        type: 'string',
+        length: 40,
+        unique: false,
+        nullable: false
+    )]
     private string $lastName;
 
-    public function __construct(?int $id, string $username, string $firstName, string $lastName)
-    {
+    public function __construct(
+        ?int $id,
+        string $username,
+        string $firstName,
+        string $lastName
+    ) {
         $this->id = $id;
         $this->username = strtolower($username);
         $this->firstName = ucfirst($firstName);
