@@ -46,8 +46,8 @@ jobs:
 
             - name: Doctrine database
               run:  |
-                ./vendor/bin/doctrine orm:schema-tool:update --dump-sql
-                ./vendor/bin/doctrine orm:schema-tool:update --force
+                php ./bin/doctrine.php orm:schema-tool:update --dump-sql
+                php ./bin/doctrine.php orm:schema-tool:update --force
 
             - name: Tests
               run: vendor/bin/phpunit --coverage-clover clover.xml
