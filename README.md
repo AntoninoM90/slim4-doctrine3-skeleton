@@ -1,4 +1,4 @@
-# Slim Framework 4 Skeleton Application with Doctrine ORM 2
+# Slim Framework 4 Skeleton Application with Doctrine ORM 3
 
 [![Build Status](https://github.com/AntoninoM90/slim4-doctrine-skeleton/workflows/Tests/badge.svg)](https://github.com/AntoninoM90/slim4-doctrine-skeleton/actions)
 
