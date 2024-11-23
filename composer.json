@@ -29,23 +29,24 @@
         }
     ],
     "require": {
-        "php": "^7.4 || ^8.0",
+        "php": "^8.2",
         "ext-json": "*",
         "doctrine/annotations": "2.*",
-        "doctrine/cache": "^2.2.0",
+        "doctrine/dbal": "^4",
         "doctrine/doctrine-bundle": "^2.13",
-        "doctrine/orm": "^2",
-        "monolog/monolog": "^2.9|^3.7",
-        "php-di/php-di": "^6.4|^7.0",
-        "slim/psr7": "^1.6|^1.7",
-        "slim/slim": "^4.14"
+        "doctrine/orm": "^3",
+        "monolog/monolog": "^3.7",
+        "php-di/php-di": "^7.0",
+        "slim/psr7": "^1.7",
+        "slim/slim": "^4.14",
+        "symfony/cache": "^7"
     },
     "require-dev": {
         "jangregor/phpstan-prophecy": "^1.0.2",
         "phpspec/prophecy-phpunit": "^2.2",
         "phpstan/extension-installer": "^1.4.3",
         "phpstan/phpstan": "^1.12",
-        "phpunit/phpunit": "^9.6.19",
+        "phpunit/phpunit": "^11.4.3",
         "squizlabs/php_codesniffer": "^3.10"
     },
     "config": {

@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 use App\Application\Settings\SettingsInterface;
 use DI\ContainerBuilder;
-use Psr\Container\ContainerInterface;
+use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Tools\Setup;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
-use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\ORM\ORMSetup;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpFilesAdapter;
@@ -58,20 +57,12 @@ return function (
             $doctrineSettings = $settings->get('doctrine');
 
             // Create the configuration for annotation metadata
-            $config = Setup::createAnnotationMetadataConfiguration(
+            $config = ORMSetup::createAttributeMetadataConfiguration(
                 $doctrineSettings['metadata_dirs'],
                 $doctrineSettings['dev_mode'],
                 $doctrineSettings['proxy_dir'],
                 null,
                 false
-            );
-
-            // Set the metadata driver
-            $config->setMetadataDriverImpl(
-                new AnnotationDriver(
-                    new AnnotationReader,
-                    $doctrineSettings['metadata_dirs'],
-                )
             );
 
             // Set cache
@@ -100,11 +91,14 @@ return function (
                 $resultCache
             );
 
-            // Create a new entity manager
-            $entityManager = EntityManager::create(
+            // configuring the database connection
+            $connection = DriverManager::getConnection(
                 $doctrineSettings['connections']['default'],
                 $config
             );
+
+            // obtaining the entity manager
+            $entityManager = new EntityManager($connection, $config);
 
             // Return the new entity manager created
             return $entityManager;
