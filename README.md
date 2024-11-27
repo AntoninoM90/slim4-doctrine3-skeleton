@@ -11,7 +11,7 @@ This skeleton application was built for Composer. This makes setting up a new Sl
 Run this command from the directory in which you want to clone the Slim Framework application skeleton. You will require PHP 8.2 or newer.
 
 ```bash
-git clone https://github.com/AntoninoM90/slim4-doctrine-skeleton.git
+git clone https://github.com/AntoninoM90/slim4-doctrine3-skeleton.git
 ```
 
 You'll want to:
