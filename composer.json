@@ -46,7 +46,7 @@
         "phpspec/prophecy-phpunit": "^2.3",
         "phpstan/extension-installer": "^1.4.3",
         "phpstan/phpstan": "^1.12",
-        "phpunit/phpunit": "^11.4.4",
+        "phpunit/phpunit": "^11.5.0",
         "squizlabs/php_codesniffer": "^3.11"
     },
     "config": {
