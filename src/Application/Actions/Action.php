@@ -93,6 +93,21 @@ abstract class Action
         return $this->respond($payload);
     }
 
+    protected function respondWithStatus(int $statusCode = 200): Response
+    {
+        $payload = new ActionPayload($statusCode);
+
+        return $this->respond($payload);
+    }
+
+    protected function respondWithError(string $type, ?string $description = null, int $statusCode = 400): Response
+    {
+        $actionError = new ActionError($type, $description);
+        $payload = new ActionPayload($statusCode, null, $actionError);
+
+        return $this->respond($payload);
+    }
+
     protected function respond(ActionPayload $payload): Response
     {
         $json = json_encode($payload, JSON_PRETTY_PRINT);
