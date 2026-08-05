@@ -36,6 +36,24 @@ class User implements JsonSerializable
     private string $username;
 
     #[Column(
+        name: 'password',
+        type: 'string',
+        length: 60,
+        unique: false,
+        nullable: false
+    )]
+    private string $password;
+
+    #[Column(
+        name: 'email_address',
+        type: 'string',
+        length: 255,
+        unique: true,
+        nullable: false
+    )]
+    private string $emailAddress;
+
+    #[Column(
         name: 'first_name',
         type: 'string',
         length: 40,
@@ -56,13 +74,17 @@ class User implements JsonSerializable
     public function __construct(
         ?int $id,
         string $username,
+        string $password,
+        string $emailAddress,
         string $firstName,
         string $lastName
     ) {
         $this->id = $id;
-        $this->username = strtolower($username);
-        $this->firstName = ucfirst($firstName);
-        $this->lastName = ucfirst($lastName);
+        $this->username = $username;
+        $this->password = $password;
+        $this->emailAddress = $emailAddress;
+        $this->firstName = $firstName;
+        $this->lastName = $lastName;
     }
 
     public function getId(): ?int
@@ -81,6 +103,32 @@ class User implements JsonSerializable
     public function getUsername(): string
     {
         return $this->username;
+    }
+
+    public function setPassword(
+        string $password
+    ): self {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    public function setEmailAddress(
+        string $emailAddress
+    ): self {
+        $this->emailAddress = $emailAddress;
+
+        return $this;
+    }
+
+    public function getEmailAddress(): string
+    {
+        return $this->emailAddress;
     }
 
     public function setFirstName(
@@ -115,6 +163,7 @@ class User implements JsonSerializable
         return [
             'id' => $this->id,
             'username' => $this->username,
+            'emailAddress' => $this->emailAddress,
             'firstName' => $this->firstName,
             'lastName' => $this->lastName,
         ];
