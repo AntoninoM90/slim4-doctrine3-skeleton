@@ -9,6 +9,7 @@ use App\Application\Actions\ActionPayload;
 use App\Domain\User\UserRepository;
 use Doctrine\ORM\EntityManager;
 use Exception;
+use Psr\Container\ContainerInterface;
 use Slim\Psr7\Response;
 use Tests\TestCase;
 
@@ -18,7 +19,7 @@ class ViewUserActionTest extends TestCase
     {
         $app = $this->getAppInstance();
 
-        /** @var Container $container */
+        /** @var ContainerInterface $container */
         $container = $app->getContainer();
 
         /** @var EntityManager $entityManager */
@@ -58,7 +59,7 @@ class ViewUserActionTest extends TestCase
     {
         $app = $this->getAppInstance();
 
-        /** @var Container $container */
+        /** @var ContainerInterface $container */
         $container = $app->getContainer();
 
         /** @var EntityManager $entityManager */

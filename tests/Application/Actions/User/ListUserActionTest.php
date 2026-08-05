@@ -7,6 +7,7 @@ namespace Tests\Application\Actions\User;
 use App\Application\Actions\ActionPayload;
 use App\Domain\User\UserRepository;
 use Doctrine\ORM\EntityManager;
+use Psr\Container\ContainerInterface;
 use Tests\TestCase;
 
 class ListUserActionTest extends TestCase
@@ -15,7 +16,7 @@ class ListUserActionTest extends TestCase
     {
         $app = $this->getAppInstance();
 
-        /** @var Container $container */
+        /** @var ContainerInterface $container */
         $container = $app->getContainer();
 
         /** @var EntityManager $entityManager */

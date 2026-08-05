@@ -6,21 +6,16 @@ namespace Tests\Domain\User;
 
 use App\Domain\User\UserRepository;
 use Doctrine\ORM\EntityManager;
+use Psr\Container\ContainerInterface;
 use Tests\TestCase;
 
 class UserTest extends TestCase
 {
-    /**
-     * @param int    $id
-     * @param string $username
-     * @param string $firstName
-     * @param string $lastName
-     */
     public function testJsonSerialize()
     {
         $app = $this->getAppInstance();
 
-        /** @var Container $container */
+        /** @var ContainerInterface $container */
         $container = $app->getContainer();
 
         /** @var EntityManager $entityManager */
