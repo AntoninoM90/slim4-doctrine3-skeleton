@@ -38,8 +38,8 @@ class UserRepository
      */
     public function findUserOfId(
         int $id,
-        int $lockMode = null,
-        int $lockVersion = null
+        ?int $lockMode = null,
+        ?int $lockVersion = null
     ): ?User {
         return $this->repository->find($id, $lockMode, $lockVersion);
     }
