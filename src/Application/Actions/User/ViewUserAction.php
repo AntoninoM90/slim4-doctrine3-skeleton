@@ -22,7 +22,7 @@ class ViewUserAction extends UserAction
             throw new UserNotFoundException();
         }
 
-        $this->logger->info('User of id ' . $userId . ' was viewed.');
+        $this->logger->info("The user with ID `{$userId}` was viewed.");
 
         return $this->respondWithData($user);
     }
