@@ -24,7 +24,7 @@ class User implements JsonSerializable
         unique: true,
         nullable: false
     ), GeneratedValue('IDENTITY')]
-    private ?int $id;
+    private ?int $id; // @phpstan-ignore property.onlyRead
 
     #[Column(
         name: 'username',
