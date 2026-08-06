@@ -11,13 +11,16 @@ class UserRepository
 {
     protected EntityManagerInterface $entityManager;
 
+    /** @var EntityRepository<User> */
     protected EntityRepository $repository;
 
     public function __construct(
         EntityManagerInterface $entityManager
     ) {
         $this->entityManager = $entityManager;
-        $this->repository = $this->entityManager->getRepository(User::class);
+        /** @var EntityRepository<User> $repository */
+        $repository = $this->entityManager->getRepository(User::class);
+        $this->repository = $repository;
     }
 
     /**
@@ -45,8 +48,8 @@ class UserRepository
     }
 
     /**
-     * @param array $criteria
-     * @param array|null $orderBy
+     * @param array<string, mixed> $criteria
+     * @param array<string, 'ASC'|'asc'|'DESC'|'desc'>|null $orderBy
      * @param mixed $limit
      * @param mixed $offset
      *
@@ -63,8 +66,8 @@ class UserRepository
     }
 
     /**
-     * @param array $criteria
-     * @param array|null $orderBy
+     * @param array<string, mixed> $criteria
+     * @param array<string, 'ASC'|'asc'|'DESC'|'desc'>|null $orderBy
      * @param mixed $limit
      * @param mixed $offset
      *

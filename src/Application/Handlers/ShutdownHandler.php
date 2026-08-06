@@ -34,7 +34,7 @@ class ShutdownHandler
         $this->logErrorDetails = $logErrorDetails;
     }
 
-    public function __invoke()
+    public function __invoke(): void
     {
         $error = error_get_last();
 
@@ -56,6 +56,9 @@ class ShutdownHandler
         $responseEmitter->emit($response);
     }
 
+    /**
+     * @param array{type: int, message: string, file: string, line: int} $error
+     */
     private function getErrorMessage(array $error): string
     {
         if (!$this->displayErrorDetails) {

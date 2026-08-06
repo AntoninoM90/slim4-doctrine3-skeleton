@@ -15,6 +15,7 @@ use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpNotImplementedException;
 use Slim\Exception\HttpUnauthorizedException;
 use Slim\Handlers\ErrorHandler as SlimErrorHandler;
+use RuntimeException;
 use Throwable;
 
 class HttpErrorHandler extends SlimErrorHandler
@@ -60,6 +61,10 @@ class HttpErrorHandler extends SlimErrorHandler
 
         $payload = new ActionPayload($statusCode, null, $error);
         $encodedPayload = json_encode($payload, JSON_PRETTY_PRINT);
+
+        if ($encodedPayload === false) {
+            throw new RuntimeException('Unable to encode the response payload.');
+        }
 
         $response = $this->responseFactory->createResponse($statusCode);
         $response->getBody()->write($encodedPayload);
