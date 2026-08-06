@@ -72,14 +72,12 @@ class User implements JsonSerializable
     private string $lastName;
 
     public function __construct(
-        ?int $id,
         string $username,
         string $password,
         string $emailAddress,
         string $firstName,
         string $lastName
     ) {
-        $this->id = $id;
         $this->username = $username;
         $this->password = $password;
         $this->emailAddress = $emailAddress;
