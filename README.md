@@ -40,3 +40,138 @@ composer test
 ```
 
 That's it! Now go build something cool.
+
+## Database Configuration
+
+The database connection is configured in `app/settings.php` under the `doctrine` key. The skeleton ships with SQLite out of the box:
+
+```php
+'doctrine' => [
+    // if true, metadata caching is forcefully disabled
+    'dev_mode' => true,
+
+    // paths containing entity classes
+    'metadata_dirs' => [__DIR__ . '/../src/Domain'],
+
+    'proxy_dir' => __DIR__ . '/../var/proxy',
+
+    'connections' => [
+        'default' => [
+            'driver' => 'pdo_sqlite',
+            'path' => __DIR__ . '/../var/data.db',
+            'charset' => 'utf8'
+        ],
+    ],
+],
+```
+
+To switch to MySQL, replace the `default` connection with:
+
+```php
+'default' => [
+    'driver' => 'pdo_mysql',
+    'host' => '127.0.0.1',
+    'port' => 3306,
+    'dbname' => 'slim_skeleton',
+    'user' => 'root',
+    'password' => '',
+    'charset' => 'utf8mb4',
+],
+```
+
+For PostgreSQL:
+
+```php
+'default' => [
+    'driver' => 'pdo_pgsql',
+    'host' => '127.0.0.1',
+    'port' => 5432,
+    'dbname' => 'slim_skeleton',
+    'user' => 'postgres',
+    'password' => '',
+    'charset' => 'utf8',
+],
+```
+
+Make sure the corresponding PDO extension is installed and enabled in your `php.ini` (`pdo_mysql`, `pdo_pgsql`, ...).
+
+## Creating a New Entity
+
+Entities are plain PHP classes annotated with Doctrine attributes. They must live in a directory listed in `metadata_dirs` (default: `src/Domain`).
+
+Example `src/Domain/Category/Category.php`:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Category;
+
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\Table;
+
+#[Entity]
+#[Table(name: 'category')]
+class Category
+{
+    #[Id, Column(type: 'integer'), GeneratedValue('IDENTITY')]
+    private ?int $id;
+
+    #[Column(type: 'string', length: 100)]
+    private string $name;
+
+    public function __construct(string $name)
+    {
+        $this->name = $name;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+}
+```
+
+Then update the database schema to create the `category` table (see below).
+
+## Doctrine Commands
+
+This skeleton ships a Doctrine ORM console at `bin/doctrine.php` (the equivalent of Symfony's `bin/console`):
+
+```bash
+# Show the SQL needed to bring the schema in sync with the entities
+php bin/doctrine.php orm:schema-tool:update --dump-sql
+
+# Apply the schema changes to the database
+php bin/doctrine.php orm:schema-tool:update --force
+
+# Create the schema from scratch
+php bin/doctrine.php orm:schema-tool:create
+
+# Validate that the entity mappings are correct
+php bin/doctrine.php orm:validate-schema
+
+# Show basic information about all mapped entities
+php bin/doctrine.php orm:info
+
+# Generate proxy classes for entities
+php bin/doctrine.php orm:generate-proxies
+```
+
+In a Symfony application the same commands are available as `bin/console doctrine:schema:update --dump-sql` / `--force`, `bin/console doctrine:schema:create`, `bin/console doctrine:validate-schema`, etc.
