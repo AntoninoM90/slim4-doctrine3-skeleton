@@ -6,6 +6,7 @@ namespace App\Application\Handlers;
 
 use App\Application\Actions\ActionError;
 use App\Application\Actions\ActionPayload;
+use App\Application\Exception\JsonEncodingException;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpException;
@@ -15,7 +16,6 @@ use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpNotImplementedException;
 use Slim\Exception\HttpUnauthorizedException;
 use Slim\Handlers\ErrorHandler as SlimErrorHandler;
-use RuntimeException;
 
 class HttpErrorHandler extends SlimErrorHandler
 {
@@ -61,7 +61,7 @@ class HttpErrorHandler extends SlimErrorHandler
         $encodedPayload = json_encode($payload, JSON_PRETTY_PRINT);
 
         if ($encodedPayload === false) {
-            throw new RuntimeException('Unable to encode the response payload.');
+            throw new JsonEncodingException('Unable to encode the response payload.');
         }
 
         $response = $this->responseFactory->createResponse($statusCode);

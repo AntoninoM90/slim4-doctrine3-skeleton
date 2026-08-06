@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Application\Actions;
 
+use App\Application\Exception\JsonEncodingException;
 use App\Domain\DomainException\DomainRecordNotFoundException;
 use Doctrine\ORM\EntityManager;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Log\LoggerInterface;
-use RuntimeException;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpNotFoundException;
 
@@ -117,7 +117,7 @@ abstract class Action
         $json = json_encode($payload, JSON_PRETTY_PRINT);
 
         if ($json === false) {
-            throw new RuntimeException('Unable to encode the response payload.');
+            throw new JsonEncodingException('Unable to encode the response payload.');
         }
 
         $this->response->getBody()->write($json);
