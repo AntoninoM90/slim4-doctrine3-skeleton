@@ -68,6 +68,7 @@
     },
     "scripts": {
         "start": "php -S localhost:8080 -t public",
-        "test": "phpunit"
+        "test": "phpunit",
+        "test:coverage": "@php -d xdebug.mode=coverage vendor/bin/phpunit --coverage-html var/coverage --coverage-text"
     }
 }

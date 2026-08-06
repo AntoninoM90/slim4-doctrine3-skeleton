@@ -53,8 +53,13 @@ jobs:
                 php ./bin/doctrine.php orm:schema-tool:update --force
 
             - name: Tests
-              #run: vendor/bin/phpunit --coverage-clover clover.xml
+              if: ${{ ! matrix.analysis }}
               run: vendor/bin/phpunit
+
+            - name: Tests with coverage
+              if: matrix.analysis
+              #run: vendor/bin/phpunit --coverage-clover clover.xml
+              run: vendor/bin/phpunit --coverage-text --coverage-clover clover.xml
 
             # - name: Upload coverage results to Coveralls
             #   if: matrix.analysis

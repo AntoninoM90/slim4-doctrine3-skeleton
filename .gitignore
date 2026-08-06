@@ -15,6 +15,7 @@ nbproject/
 
 # Cache
 /var/cache/*
+var/coverage/
 .phpunit.result.cache
 .phpunit.cache/
 cache.properties
