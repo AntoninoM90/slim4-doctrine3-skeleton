@@ -68,17 +68,13 @@ class UserRepository
     /**
      * @param array<string, mixed> $criteria
      * @param array<string, 'ASC'|'asc'|'DESC'|'desc'>|null $orderBy
-     * @param mixed $limit
-     * @param mixed $offset
      *
      * @return User|null
      * @throws UserNotFoundException
      */
     public function findOneUserBy(
         array $criteria,
-        ?array $orderBy = null,
-        $limit = null,
-        $offset = null
+        ?array $orderBy = null
     ): ?User {
         return $this->repository->findOneBy($criteria, $orderBy);
     }
