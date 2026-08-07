@@ -34,3 +34,4 @@ var/doctrine/*
 var/data.db
 var/test.db
 var/test.db-*
+/var/proxy
