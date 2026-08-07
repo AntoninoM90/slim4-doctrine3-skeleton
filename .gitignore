@@ -25,6 +25,12 @@ cache.properties
 composer.phar
 composer.lock
 
+# Environment
+.env
+.env.local
+
 # Doctrine
 var/doctrine/*
 var/data.db
+var/test.db
+var/test.db-*
