@@ -12,7 +12,8 @@ services:
             # APP_DB_USER: slim_app
             # APP_DB_PASSWORD: slim_app
         ports:
-            - "8080:8080"
+            # Host port (configurable via APP_PORT in .env). Defaults to 8080.
+            - "${APP_PORT:-8080}:8080"
         volumes:
             # The whole project is bind-mounted: the SQLite database
             # (var/data.db), the per-environment log files (logs/*.log) and
