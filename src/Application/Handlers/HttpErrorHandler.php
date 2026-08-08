@@ -6,6 +6,7 @@ namespace App\Application\Handlers;
 
 use App\Application\Actions\ActionError;
 use App\Application\Actions\ActionPayload;
+use App\Application\Exception\HttpValidationException;
 use App\Application\Exception\JsonEncodingException;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -17,6 +18,7 @@ use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpNotImplementedException;
 use Slim\Exception\HttpUnauthorizedException;
 use Slim\Handlers\ErrorHandler as SlimErrorHandler;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 class HttpErrorHandler extends SlimErrorHandler
 {
@@ -48,6 +50,9 @@ class HttpErrorHandler extends SlimErrorHandler
                 $error->setType(ActionError::BAD_REQUEST);
             } elseif ($exception instanceof HttpNotImplementedException) {
                 $error->setType(ActionError::NOT_IMPLEMENTED);
+            } elseif ($exception instanceof HttpValidationException) {
+                $error->setType(ActionError::VALIDATION_ERROR);
+                $error->setDetails($this->formatViolations($exception->getViolations()));
             }
         }
 
@@ -69,5 +74,25 @@ class HttpErrorHandler extends SlimErrorHandler
         $response->getBody()->write($encodedPayload);
 
         return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    private function formatViolations(ConstraintViolationListInterface $violations): array
+    {
+        $details = [];
+
+        foreach ($violations as $violation) {
+            $field = (string) $violation->getPropertyPath();
+
+            if ($field === '') {
+                $field = 'request';
+            }
+
+            $details[$field][] = (string) $violation->getMessage();
+        }
+
+        return $details;
     }
 }

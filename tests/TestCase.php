@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\Application\Handlers\HttpErrorHandler;
+use App\Application\Settings\SettingsInterface;
 use DI\ContainerBuilder;
 use Exception;
 use PHPUnit\Framework\TestCase as PHPUnit_TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Log\LoggerInterface;
 use Slim\App;
 use Slim\Factory\AppFactory;
 use Slim\Psr7\Factory\StreamFactory;
@@ -53,6 +57,55 @@ class TestCase extends PHPUnit_TestCase
         // Register routes
         $routes = require __DIR__ . '/../app/routes.php';
         $routes($app);
+
+        return $app;
+    }
+
+    /**
+     * Get an app instance wired with routing, body parsing and the project
+     * error handler, so handled requests return JSON error payloads instead
+     * of throwing exceptions.
+     *
+     * @return App
+     * @throws Exception
+     */
+    protected function getAppWithErrorHandling(): App
+    {
+        $app = $this->getAppInstance();
+
+        /** @var ContainerInterface $container */
+        $container = $app->getContainer();
+
+        /** @var SettingsInterface $settings */
+        $settings = $container->get(SettingsInterface::class);
+
+        /** @var bool $displayErrorDetails */
+        $displayErrorDetails = $settings->get('displayErrorDetails');
+
+        /** @var bool $logError */
+        $logError = $settings->get('logError');
+
+        /** @var bool $logErrorDetails */
+        $logErrorDetails = $settings->get('logErrorDetails');
+
+        /** @var LoggerInterface $logger */
+        $logger = $container->get(LoggerInterface::class);
+
+        $errorHandler = new HttpErrorHandler(
+            $app->getCallableResolver(),
+            $app->getResponseFactory(),
+            $logger
+        );
+
+        $app->addRoutingMiddleware();
+        $app->addBodyParsingMiddleware();
+        $errorMiddleware = $app->addErrorMiddleware(
+            $displayErrorDetails,
+            $logError,
+            $logErrorDetails,
+            $logger
+        );
+        $errorMiddleware->setDefaultErrorHandler($errorHandler);
 
         return $app;
     }

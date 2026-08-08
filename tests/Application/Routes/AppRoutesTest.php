@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Application\Routes;
 
-use App\Application\Handlers\HttpErrorHandler;
-use App\Application\Settings\SettingsInterface;
 use App\Domain\User\User;
 use App\Domain\User\UserRepository;
 use Doctrine\ORM\EntityManager;
 use Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface;
 use Slim\App;
 use Tests\TestCase;
 
@@ -38,47 +35,6 @@ class AppRoutesTest extends TestCase
         }
 
         parent::tearDown();
-    }
-
-    private function getAppWithErrorHandling(): App
-    {
-        $app = $this->getAppInstance();
-
-        /** @var ContainerInterface $container */
-        $container = $app->getContainer();
-
-        /** @var SettingsInterface $settings */
-        $settings = $container->get(SettingsInterface::class);
-
-        /** @var bool $displayErrorDetails */
-        $displayErrorDetails = $settings->get('displayErrorDetails');
-
-        /** @var bool $logError */
-        $logError = $settings->get('logError');
-
-        /** @var bool $logErrorDetails */
-        $logErrorDetails = $settings->get('logErrorDetails');
-
-        /** @var LoggerInterface $logger */
-        $logger = $container->get(LoggerInterface::class);
-
-        $errorHandler = new HttpErrorHandler(
-            $app->getCallableResolver(),
-            $app->getResponseFactory(),
-            $logger
-        );
-
-        $app->addRoutingMiddleware();
-        $app->addBodyParsingMiddleware();
-        $errorMiddleware = $app->addErrorMiddleware(
-            $displayErrorDetails,
-            $logError,
-            $logErrorDetails,
-            $logger
-        );
-        $errorMiddleware->setDefaultErrorHandler($errorHandler);
-
-        return $app;
     }
 
     public function testRootRouteReturnsHelloWorld()

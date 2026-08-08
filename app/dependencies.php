@@ -14,6 +14,8 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpFilesAdapter;
+use Symfony\Component\Validator\Validation;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Set dependencies of the application.
@@ -108,6 +110,13 @@ return function (
 
             // Return the new entity manager created
             return $entityManager;
+        },
+
+        // Symfony Validator (attribute mapping)
+        ValidatorInterface::class => function (): ValidatorInterface {
+            return Validation::createValidatorBuilder()
+                ->enableAttributeMapping()
+                ->getValidator();
         },
     ]);
 };

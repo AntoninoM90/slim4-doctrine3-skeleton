@@ -22,6 +22,11 @@ class ActionError implements JsonSerializable
 
     private ?string $description;
 
+    /**
+     * @var array<string, list<string>>|null
+     */
+    private ?array $details = null;
+
     public function __construct(string $type, ?string $description = null)
     {
         $this->type = $type;
@@ -51,14 +56,38 @@ class ActionError implements JsonSerializable
     }
 
     /**
-     * @return array{type: string, description: string|null}
+     * @return array<string, list<string>>|null
+     */
+    public function getDetails(): ?array
+    {
+        return $this->details;
+    }
+
+    /**
+     * @param array<string, list<string>>|null $details
+     */
+    public function setDetails(?array $details = null): self
+    {
+        $this->details = $details;
+
+        return $this;
+    }
+
+    /**
+     * @return array{type: string, description: string|null, details?: array<string, list<string>>}
      */
     #[\ReturnTypeWillChange]
     public function jsonSerialize(): array
     {
-        return [
+        $serialized = [
             'type' => $this->type,
             'description' => $this->description,
         ];
+
+        if ($this->details !== null) {
+            $serialized['details'] = $this->details;
+        }
+
+        return $serialized;
     }
 }

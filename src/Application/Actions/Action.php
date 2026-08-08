@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Application\Actions;
 
+use App\Application\Exception\HttpValidationException;
 use App\Application\Exception\JsonEncodingException;
+use App\Application\Request\AbstractRequest;
 use App\Domain\DomainException\DomainRecordNotFoundException;
 use Doctrine\ORM\EntityManager;
 use Fig\Http\Message\StatusCodeInterface;
@@ -14,6 +16,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Log\LoggerInterface;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpNotFoundException;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 abstract class Action
 {
@@ -22,6 +25,8 @@ abstract class Action
     protected LoggerInterface $logger;
 
     protected EntityManager $entityManager;
+
+    protected ValidatorInterface $validator;
 
     protected Request $request;
 
@@ -40,6 +45,7 @@ abstract class Action
         $this->container = $container;
         $this->logger = $container->get(LoggerInterface::class);
         $this->entityManager = $container->get(EntityManager::class);
+        $this->validator = $container->get(ValidatorInterface::class);
     }
 
     /**
@@ -73,6 +79,30 @@ abstract class Action
     protected function getFormData()
     {
         return $this->request->getParsedBody();
+    }
+
+    /**
+     * Build a request DTO from the parsed body and validate it.
+     *
+     * @template T of AbstractRequest
+     *
+     * @param class-string<T> $requestClass
+     *
+     * @return T
+     * @throws HttpValidationException
+     */
+    protected function validateRequest(string $requestClass): AbstractRequest
+    {
+        /** @var T $request */
+        $request = $requestClass::fromBody((array) $this->getFormData());
+
+        $violations = $this->validator->validate($request);
+
+        if ($violations->count() > 0) {
+            throw new HttpValidationException($this->request, $violations);
+        }
+
+        return $request;
     }
 
     /**
