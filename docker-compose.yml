@@ -1,8 +1,14 @@
-version: '3.7'
-
 volumes:
     logs:
         driver: local
+    # Named volume used by the PostgreSQL example below. Uncomment it when
+    # you enable PostgreSQL:
+    # postgres_data:
+    #     driver: local
+    # Named volume used by the MySQL example below. Uncomment it when you
+    # enable MySQL:
+    # mysql_data:
+    #     driver: local
 
 services:
     slim:
@@ -11,8 +17,55 @@ services:
         command: php -S 0.0.0.0:8080 -t public
         environment:
             docker: "true"
+            # Database settings for PostgreSQL/MySQL (see examples below).
+            # APP_DB_DRIVER: pdo_pgsql
+            # APP_DB_HOST: postgres
+            # APP_DB_NAME: slim_app
+            # APP_DB_USER: slim_app
+            # APP_DB_PASSWORD: slim_app
         ports:
             - "8080:8080"
         volumes:
+            # The whole project is bind-mounted: the SQLite database
+            # (var/data.db) and any code change persist on the host.
             - .:/var/www
             - logs:/var/www/logs
+
+# ---------------------------------------------------------------------------
+# SQLite is the default database and needs no database service: the database
+# file var/data.db persists on the host through the ".:/var/www" bind mount.
+#
+# EXAMPLE: switch to PostgreSQL
+# (uncomment the postgres_data volume at the top, add the environment
+# variables to the "slim" service and add the "postgres" service below)
+# ---------------------------------------------------------------------------
+#  postgres:
+#      image: postgres:16-alpine
+#      restart: unless-stopped
+#      environment:
+#          POSTGRES_DB: slim_app
+#          POSTGRES_USER: slim_app
+#          POSTGRES_PASSWORD: slim_app
+#      ports:
+#          - "5432:5432"
+#      volumes:
+#          # Named volume: the database data survives container restarts.
+#          - postgres_data:/var/lib/postgresql/data
+#      healthcheck:
+#          test: ["CMD-SHELL", "pg_isready -U slim_app -d slim_app"]
+#          interval: 5s
+#          timeout: 3s
+#          retries: 10
+#
+# The php:8.3-alpine image ships pdo_sqlite only. To use PostgreSQL (or
+# MySQL) build a custom image that also enables the driver, for example:
+#
+#   FROM php:8.3-alpine
+#   RUN apk add --no-cache postgresql-dev \
+#       && docker-php-ext-install pdo_mysql pdo_pgsql
+#
+# and change "image: php:8.3-alpine" to "build: ." on the "slim" service.
+#
+# For MySQL the recipe is the same: image mysql:8.4, the mysql_data volume
+# mounted on /var/lib/mysql and port 3306 instead of 5432.
+# ---------------------------------------------------------------------------

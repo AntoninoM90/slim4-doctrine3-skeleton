@@ -33,6 +33,8 @@ docker-compose up -d
 ```
 After that, open `http://localhost:8080` in your browser.
 
+The `docker-compose.yml` runs with SQLite out of the box: the database file `var/data.db` persists on the host through the bind-mounted project directory. To use PostgreSQL or MySQL instead, follow the commented examples in `docker-compose.yml` (they include a database service with a named volume so the data survives container restarts) and set the matching values in `.env` (e.g. `APP_DB_DRIVER=pdo_pgsql` and `APP_DB_HOST=postgres`).
+
 Run this command in the application directory to run the test suite
 
 ```bash
