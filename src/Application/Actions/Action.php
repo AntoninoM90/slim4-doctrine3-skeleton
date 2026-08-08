@@ -7,6 +7,7 @@ namespace App\Application\Actions;
 use App\Application\Exception\JsonEncodingException;
 use App\Domain\DomainException\DomainRecordNotFoundException;
 use Doctrine\ORM\EntityManager;
+use Fig\Http\Message\StatusCodeInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -90,22 +91,25 @@ abstract class Action
     /**
      * @param array<array-key, mixed>|object|null $data
      */
-    protected function respondWithData($data = null, int $statusCode = 200): Response
+    protected function respondWithData($data = null, int $statusCode = StatusCodeInterface::STATUS_OK): Response
     {
         $payload = new ActionPayload($statusCode, $data);
 
         return $this->respond($payload);
     }
 
-    protected function respondWithStatus(int $statusCode = 200): Response
+    protected function respondWithStatus(int $statusCode = StatusCodeInterface::STATUS_OK): Response
     {
         $payload = new ActionPayload($statusCode);
 
         return $this->respond($payload);
     }
 
-    protected function respondWithError(string $type, ?string $description = null, int $statusCode = 400): Response
-    {
+    protected function respondWithError(
+        string $type,
+        ?string $description = null,
+        int $statusCode = StatusCodeInterface::STATUS_BAD_REQUEST
+    ): Response {
         $actionError = new ActionError($type, $description);
         $payload = new ActionPayload($statusCode, null, $actionError);
 
