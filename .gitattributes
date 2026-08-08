@@ -1,0 +1,21 @@
+* text=auto
+
+*.php text eol=lf
+*.phtml text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.xml text eol=lf
+*.neon text eol=lf
+*.env text eol=lf
+*.example text eol=lf
+*.sql text eol=lf
+*.sh text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.dist text eol=lf
+*.htaccess text eol=lf
+
+*.bat text eol=crlf
+*.cmd text eol=crlf
