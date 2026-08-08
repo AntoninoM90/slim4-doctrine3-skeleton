@@ -13,6 +13,9 @@ return function (ContainerBuilder $containerBuilder) {
     // Global Settings Object
     $containerBuilder->addDefinitions([
         SettingsInterface::class => function () {
+            // Application environment: dev (default), test or prod (see .env.example)
+            $appEnv = (string) Environment::get('APP_ENV', 'dev');
+
             // Database connection settings (see .env.example)
             $dbDriver = Environment::get('APP_DB_DRIVER', 'pdo_sqlite');
             $dbCharset = Environment::get('APP_DB_CHARSET', 'utf8');
@@ -33,13 +36,17 @@ return function (ContainerBuilder $containerBuilder) {
             }
 
             return new Settings([
-                'displayErrorDetails' => true, // Should be set to false in production
+                'displayErrorDetails' => $appEnv !== 'prod', // Should be set to false in production
                 'logError' => false,
                 'logErrorDetails' => false,
                 'logger' => [
                     'name' => 'slim-app',
-                    'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../logs/app.log',
-                    'level' => Logger::DEBUG,
+                    // Separate log file per environment: logs/dev.log, logs/prod.log
+                    'path' => __DIR__ . '/../logs/' . $appEnv . '.log',
+                    // Verbose in development, warnings and above in production
+                    'level' => $appEnv === 'prod' ? Logger::INFO : Logger::DEBUG,
+                    // In Docker, logs are also mirrored to stdout (see dependencies.php)
+                    'stdout' => (bool) Environment::get('docker', false),
                 ],
 
                 // Doctrine ORM settings

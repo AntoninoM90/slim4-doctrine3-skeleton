@@ -20,6 +20,9 @@ if (file_exists($testDbPath)) {
 putenv('APP_DB_DRIVER=pdo_sqlite');
 putenv('APP_DB_PATH=' . $testDbPath);
 
+// Run tests in the "test" environment so logs go to logs/test.log.
+putenv('APP_ENV=test');
+
 $doctrineSettings = [
     'dev_mode' => true,
     'metadata_dirs' => [__DIR__ . '/../src/Domain'],

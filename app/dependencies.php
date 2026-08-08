@@ -40,9 +40,15 @@ return function (
             $processor = new UidProcessor();
             $logger->pushProcessor($processor);
 
-            // Push stream handler
+            // Push stream handler: environment-specific log file (logs/dev.log, ...)
             $handler = new StreamHandler($loggerSettings['path'], $loggerSettings['level']);
             $logger->pushHandler($handler);
+
+            // In Docker, also mirror logs to stdout so they show up in
+            // "docker compose logs"
+            if (!empty($loggerSettings['stdout'])) {
+                $logger->pushHandler(new StreamHandler('php://stdout', $loggerSettings['level']));
+            }
 
             // Return the logger
             return $logger;

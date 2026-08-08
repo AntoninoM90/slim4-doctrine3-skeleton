@@ -43,6 +43,17 @@ composer test
 
 That's it! Now go build something cool.
 
+## Environment and Logging
+
+Set `APP_ENV` in `.env` to select the environment: `dev` (default), `test` or `prod`.
+
+Monolog writes to a separate file per environment inside `logs/`, e.g. `logs/dev.log`,
+`logs/prod.log` and `logs/test.log`. In `dev` (and `test`) the log level is `DEBUG` and
+error details are displayed; in `prod` the level is `INFO` and error details are hidden.
+
+When running under Docker Compose, log lines are also mirrored to stdout, so they are
+visible with `docker compose logs slim`.
+
 ## Database Configuration
 
 The database connection is configured in `app/settings.php` under the `doctrine` key. The skeleton ships with SQLite out of the box:
