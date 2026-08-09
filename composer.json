@@ -1,6 +1,6 @@
 {
-    "name": "antoninom90/slim4-doctrine-skeleton",
-    "description": "Slim Framework 4 Skeleton Application with Doctrine ORM 2",
+    "name": "antoninom90/slim4-doctrine3-skeleton",
+    "description": "Slim Framework 4 Skeleton Application with Doctrine ORM 3",
     "keywords": [
         "slim",
         "microframework",
@@ -9,7 +9,7 @@
         "router",
         "psr7"
     ],
-    "homepage": "http://github.com/AntoninoM90/slim4-doctrine-skeleton",
+    "homepage": "https://github.com/AntoninoM90/slim4-doctrine3-skeleton",
     "type": "template",
     "license": "MIT",
     "authors": [
