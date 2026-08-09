@@ -8,6 +8,8 @@ use Tests\TestCase;
 
 class RateLimitMiddlewareTest extends TestCase
 {
+    private const USERS_LIST_ROUTE = '/users';
+
     protected function setUp(): void
     {
         putenv('APP_RATE_LIMIT=1');
@@ -50,8 +52,8 @@ class RateLimitMiddlewareTest extends TestCase
     {
         $app = $this->getAppWithErrorHandling();
 
-        $firstResponse = $app->handle($this->createRequest('GET', '/users'));
-        $secondResponse = $app->handle($this->createRequest('GET', '/users'));
+        $firstResponse = $app->handle($this->createRequest('GET', self::USERS_LIST_ROUTE));
+        $secondResponse = $app->handle($this->createRequest('GET', self::USERS_LIST_ROUTE));
 
         $this->assertEquals(200, $firstResponse->getStatusCode());
         $this->assertSame('3', $firstResponse->getHeaderLine('X-RateLimit-Limit'));
@@ -65,11 +67,11 @@ class RateLimitMiddlewareTest extends TestCase
         $app = $this->getAppWithErrorHandling();
 
         for ($i = 0; $i < 3; $i++) {
-            $response = $app->handle($this->createRequest('GET', '/users'));
+            $response = $app->handle($this->createRequest('GET', self::USERS_LIST_ROUTE));
             $this->assertEquals(200, $response->getStatusCode());
         }
 
-        $limitedResponse = $app->handle($this->createRequest('GET', '/users'));
+        $limitedResponse = $app->handle($this->createRequest('GET', self::USERS_LIST_ROUTE));
 
         $this->assertEquals(429, $limitedResponse->getStatusCode());
         $this->assertSame(self::CONTENT_TYPE_JSON, $limitedResponse->getHeaderLine('Content-Type'));
@@ -84,7 +86,7 @@ class RateLimitMiddlewareTest extends TestCase
         $requestFrom = function (string $ip) {
             return $this->createRequest(
                 'GET',
-                '/users',
+                self::USERS_LIST_ROUTE,
                 ['HTTP_ACCEPT' => self::CONTENT_TYPE_JSON],
                 [],
                 ['REMOTE_ADDR' => $ip]
@@ -108,7 +110,7 @@ class RateLimitMiddlewareTest extends TestCase
         $app = $this->getAppWithErrorHandling();
 
         $requestFrom = function (int $userId) {
-            return $this->createRequest('GET', '/users')->withAttribute('user_id', $userId);
+            return $this->createRequest('GET', self::USERS_LIST_ROUTE)->withAttribute('user_id', $userId);
         };
 
         for ($i = 0; $i < 3; $i++) {
@@ -130,7 +132,7 @@ class RateLimitMiddlewareTest extends TestCase
         $app = $this->getAppWithErrorHandling();
 
         for ($i = 0; $i < 3; $i++) {
-            $response = $app->handle($this->createRequest('GET', '/users'));
+            $response = $app->handle($this->createRequest('GET', self::USERS_LIST_ROUTE));
 
             $this->assertEquals(200, $response->getStatusCode());
             $this->assertSame('', $response->getHeaderLine('X-RateLimit-Limit'));

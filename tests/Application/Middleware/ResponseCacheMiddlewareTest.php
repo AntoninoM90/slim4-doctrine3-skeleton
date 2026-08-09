@@ -8,6 +8,8 @@ use Tests\TestCase;
 
 class ResponseCacheMiddlewareTest extends TestCase
 {
+    private const USERS_LIST_ROUTE = '/users';
+
     protected function setUp(): void
     {
         putenv('APP_HTTP_CACHE=1');
@@ -46,7 +48,7 @@ class ResponseCacheMiddlewareTest extends TestCase
     {
         $app = $this->getAppWithErrorHandling();
 
-        $request = $this->createRequest('GET', '/users');
+        $request = $this->createRequest('GET', self::USERS_LIST_ROUTE);
 
         $firstResponse = $app->handle($request);
         $secondResponse = $app->handle($request);
@@ -61,7 +63,7 @@ class ResponseCacheMiddlewareTest extends TestCase
     {
         $app = $this->getAppWithErrorHandling();
 
-        $listRequest = $this->createRequest('GET', '/users');
+        $listRequest = $this->createRequest('GET', self::USERS_LIST_ROUTE);
         $missingRequest = $this->createRequest('GET', '/user/999999999');
 
         $listResponse = $app->handle($listRequest);
@@ -96,7 +98,7 @@ class ResponseCacheMiddlewareTest extends TestCase
     {
         $app = $this->getAppWithErrorHandling();
 
-        $request = $this->createRequest('GET', '/users', ['Authorization' => 'Bearer token']);
+        $request = $this->createRequest('GET', self::USERS_LIST_ROUTE, ['Authorization' => 'Bearer token']);
 
         $firstResponse = $app->handle($request);
         $secondResponse = $app->handle($request);
