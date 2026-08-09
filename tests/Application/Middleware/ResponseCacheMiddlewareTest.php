@@ -81,7 +81,7 @@ class ResponseCacheMiddlewareTest extends TestCase
         $app = $this->getAppWithErrorHandling();
 
         $request = $this->createRequest('POST', '/users')
-            ->withHeader('Content-Type', 'application/json');
+            ->withHeader('Content-Type', self::CONTENT_TYPE_JSON);
         $request->getBody()->write(json_encode([], JSON_THROW_ON_ERROR));
 
         $firstResponse = $app->handle($request);

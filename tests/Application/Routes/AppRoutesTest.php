@@ -63,7 +63,7 @@ class AppRoutesTest extends TestCase
         $response = $app->handle($this->createRequest('GET', '/users'));
 
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals('application/json', $response->getHeaderLine('Content-Type'));
+        $this->assertEquals(self::CONTENT_TYPE_JSON, $response->getHeaderLine('Content-Type'));
 
         $payload = json_decode((string) $response->getBody(), true);
 
@@ -95,7 +95,7 @@ class AppRoutesTest extends TestCase
         $response = $app->handle($this->createRequest('GET', '/user/' . $userId));
 
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals('application/json', $response->getHeaderLine('Content-Type'));
+        $this->assertEquals(self::CONTENT_TYPE_JSON, $response->getHeaderLine('Content-Type'));
 
         $payload = json_decode((string) $response->getBody(), true);
 
@@ -127,7 +127,7 @@ class AppRoutesTest extends TestCase
         $response = $app->handle($this->createRequest('GET', '/user/' . $userId));
 
         $this->assertEquals(404, $response->getStatusCode());
-        $this->assertEquals('application/json', $response->getHeaderLine('Content-Type'));
+        $this->assertEquals(self::CONTENT_TYPE_JSON, $response->getHeaderLine('Content-Type'));
 
         $payload = json_decode((string) $response->getBody(), true);
 
@@ -143,7 +143,7 @@ class AppRoutesTest extends TestCase
         $response = $app->handle($this->createRequest('GET', '/unknown-route'));
 
         $this->assertEquals(405, $response->getStatusCode());
-        $this->assertEquals('application/json', $response->getHeaderLine('Content-Type'));
+        $this->assertEquals(self::CONTENT_TYPE_JSON, $response->getHeaderLine('Content-Type'));
 
         $payload = json_decode((string) $response->getBody(), true);
 

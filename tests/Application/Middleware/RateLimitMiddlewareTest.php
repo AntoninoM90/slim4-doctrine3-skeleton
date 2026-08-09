@@ -72,7 +72,7 @@ class RateLimitMiddlewareTest extends TestCase
         $limitedResponse = $app->handle($this->createRequest('GET', '/users'));
 
         $this->assertEquals(429, $limitedResponse->getStatusCode());
-        $this->assertSame('application/json', $limitedResponse->getHeaderLine('Content-Type'));
+        $this->assertSame(self::CONTENT_TYPE_JSON, $limitedResponse->getHeaderLine('Content-Type'));
         $this->assertTrue($limitedResponse->hasHeader('Retry-After'));
         $this->assertSame('Too many requests', json_decode((string) $limitedResponse->getBody(), true)['message']);
     }
@@ -85,7 +85,7 @@ class RateLimitMiddlewareTest extends TestCase
             return $this->createRequest(
                 'GET',
                 '/users',
-                ['HTTP_ACCEPT' => 'application/json'],
+                ['HTTP_ACCEPT' => self::CONTENT_TYPE_JSON],
                 [],
                 ['REMOTE_ADDR' => $ip]
             );

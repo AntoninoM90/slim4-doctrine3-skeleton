@@ -24,6 +24,8 @@ class TestCase extends PHPUnit_TestCase
 {
     use ProphecyTrait;
 
+    protected const CONTENT_TYPE_JSON = 'application/json';
+
     /**
      * @return App
      * @throws Exception
@@ -121,7 +123,7 @@ class TestCase extends PHPUnit_TestCase
     protected function createRequest(
         string $method,
         string $path,
-        array $headers = ['HTTP_ACCEPT' => 'application/json'],
+        array $headers = ['HTTP_ACCEPT' => self::CONTENT_TYPE_JSON],
         array $cookies = [],
         array $serverParams = []
     ): Request {
