@@ -47,10 +47,10 @@ jobs:
               if: matrix.analysis
               run: vendor/bin/phpstan
 
-            - name: Doctrine database
+            - name: Doctrine database (migrations)
               run:  |
-                php ./bin/doctrine.php orm:schema-tool:update --dump-sql
-                php ./bin/doctrine.php orm:schema-tool:update --force
+                php ./bin/doctrine.php migrations:migrate --no-interaction
+                php ./bin/doctrine.php orm:validate-schema --skip-sync
 
             - name: Tests
               if: ${{ ! matrix.analysis }}

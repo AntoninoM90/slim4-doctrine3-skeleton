@@ -226,7 +226,69 @@ class Category
 }
 ```
 
-Then update the database schema to create the `category` table (see below).
+Then generate a migration for the new table and apply it (see "Database Migrations" below).
+
+## Database Migrations
+
+Database changes are managed with Doctrine Migrations (`doctrine/migrations`).
+Migrations are plain PHP classes stored in the `migrations/` directory
+(namespace `App\Migration`) and executed through the Doctrine console:
+
+```bash
+# Show the status of the migrations
+php bin/doctrine.php migrations:status
+
+# Apply all pending migrations
+php bin/doctrine.php migrations:migrate
+
+# Revert the last applied migration
+php bin/doctrine.php migrations:migrate prev
+```
+
+The same commands are available through `composer doctrine` (e.g.
+`composer doctrine -- migrations:migrate`). The standalone
+`vendor/bin/doctrine-migrations` binary works too, since `cli-config.php`
+returns the migrations `DependencyFactory`.
+
+The migration configuration lives in `app/migrations.php`:
+
+- migration classes are stored in `migrations/` under the `App\Migration`
+  namespace (loaded by doctrine/migrations itself, no composer autoload entry
+  needed);
+- executed versions are recorded in the `doctrine_migration_versions` table;
+- each migration runs inside a transaction where the driver supports it
+  (`all_or_nothing`).
+
+The skeleton ships one initial migration (`migrations/Version20260809122208.php`)
+that creates the `user` table. It was generated with `migrations:diff` against
+an empty database, so the SQL it contains is SQLite-specific. When you switch
+to PostgreSQL or MySQL, drop the database and regenerate a platform-specific
+migration instead:
+
+```bash
+# with APP_DB_DRIVER set to the target platform
+php bin/doctrine.php migrations:diff
+php bin/doctrine.php migrations:migrate
+```
+
+After changing an entity, generate the migration for the change with:
+
+```bash
+php bin/doctrine.php migrations:diff
+php bin/doctrine.php migrations:migrate
+```
+
+To adopt migrations on a database that already contains the schema (for
+example an existing project), mark the current migration as already executed
+instead of applying it:
+
+```bash
+php bin/doctrine.php migrations:version --add App\Migration\Version20260809122208
+```
+
+> **Note:** `orm:validate-schema` reports the `doctrine_migration_versions`
+> table as a schema difference. Use `orm:validate-schema --skip-sync` (as the
+> CI workflow does) to skip that check.
 
 ## Doctrine Commands
 
@@ -250,6 +312,15 @@ php bin/doctrine.php orm:info
 
 # Generate proxy classes for entities
 php bin/doctrine.php orm:generate-proxies
+
+# List the available migrations and their status
+php bin/doctrine.php migrations:list
+
+# Generate a new empty migration
+php bin/doctrine.php migrations:generate
+
+# Generate a migration for the differences between the entities and the database
+php bin/doctrine.php migrations:diff
 ```
 
 In a Symfony application the same commands are available as `bin/console doctrine:schema:update --dump-sql` / `--force`, `bin/console doctrine:schema:create`, `bin/console doctrine:validate-schema`, etc.

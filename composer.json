@@ -33,6 +33,7 @@
         "ext-json": "*",
         "doctrine/dbal": "^4",
         "doctrine/doctrine-bundle": "^2.16",
+        "doctrine/migrations": "^3.8",
         "doctrine/orm": "^3",
         "fig/http-message-util": "^1.1",
         "monolog/monolog": "^3.10",
@@ -70,6 +71,7 @@
     },
     "scripts": {
         "start": "php -S localhost:8080 -t public",
+        "doctrine": "php bin/doctrine.php",
         "test": "phpunit",
         "test:coverage": "@php -d xdebug.mode=coverage vendor/bin/phpunit --coverage-html var/coverage --coverage-clover var/coverage/clover.xml --coverage-text"
     }
