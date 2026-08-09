@@ -74,6 +74,19 @@ return function (ContainerBuilder $containerBuilder) {
                     // Directory where cached responses are stored
                     'dir' => __DIR__ . '/../var/cache/http',
                 ],
+
+                // Request rate limiting settings
+                'rate_limit' => [
+                    // Limit requests only when explicitly enabled via the
+                    // APP_RATE_LIMIT environment variable (default: off)
+                    'enabled' => (bool) Environment::get('APP_RATE_LIMIT', false),
+                    // Maximum number of requests allowed in a window
+                    'limit' => (int) Environment::get('APP_RATE_LIMIT_MAX', 60),
+                    // Window size, in seconds
+                    'window' => (int) Environment::get('APP_RATE_LIMIT_WINDOW', 60),
+                    // Directory where request counters are stored
+                    'dir' => __DIR__ . '/../var/cache/rate_limit',
+                ],
             ]);
         }
     ]);

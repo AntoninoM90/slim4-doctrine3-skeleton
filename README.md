@@ -89,6 +89,36 @@ When enabled:
   the values `HIT` (served from cache), `MISS` (stored on first request) or
   `SKIP` (the request is not cacheable).
 
+## Rate Limiting
+
+The application can rate-limit requests per client IP address (or per user id,
+when the request carries one) with a fixed-window counter backed by a Symfony
+Cache pool.
+
+It is **disabled by default**; to enable it, set `APP_RATE_LIMIT=1`
+in your `.env` file (or change the `rate_limit.enabled` value in
+`app/settings.php`):
+
+```bash
+APP_RATE_LIMIT=1
+```
+
+When enabled:
+
+- every request counts against a fixed window of `rate_limit.window` seconds
+  (60 by default); once `rate_limit.limit` requests (60 by default) are used
+  up, the client receives a `429 Too Many Requests` response;
+- the requestor key is the client IP address, unless the request carries a
+  user id (via the `user_id` request attribute or the `user_id` session key),
+  in which case the limit applies to that user instead;
+- allowed responses carry `X-RateLimit-Limit`, `X-RateLimit-Remaining` and
+  `X-RateLimit-Reset` headers; limited responses also carry a `Retry-After`
+  header;
+- counters expire at the end of each window and are stored in the
+  `rate_limit.dir` directory (`var/cache/rate_limit`);
+- the limits can be tuned with the `APP_RATE_LIMIT_MAX` and
+  `APP_RATE_LIMIT_WINDOW` environment variables.
+
 ## Database Configuration
 
 The database connection is configured in `app/settings.php` under the `doctrine` key. The skeleton ships with SQLite out of the box:

@@ -121,10 +121,12 @@ return function (
                 ->getValidator();
         },
 
-        // HTTP response cache pool (Symfony Cache). While the cache is
-        // disabled (http_cache.enabled = false, the default) the pool is an
-        // ephemeral ArrayAdapter; when enabled, a FilesystemAdapter persists
-        // responses in var/cache/http.
+        // Shared Symfony Cache pool. While neither feature is enabled the
+        // pool is an ephemeral ArrayAdapter. When HTTP response caching is
+        // enabled a FilesystemAdapter persists responses in var/cache/http;
+        // otherwise, when rate limiting is enabled, a FilesystemAdapter
+        // persists request counters in var/cache/rate_limit. Both features
+        // namespace their keys, so a single pool can back both at once.
         CacheItemPoolInterface::class => function (ContainerInterface $c): CacheItemPoolInterface {
             /** @var SettingsInterface $settings */
             $settings = $c->get(SettingsInterface::class);
@@ -132,20 +134,30 @@ return function (
             /** @var array<string, mixed> $httpCacheSettings */
             $httpCacheSettings = $settings->get('http_cache');
 
-            if (!($httpCacheSettings['enabled'] ?? false)) {
-                return new ArrayAdapter();
+            /** @var array<string, mixed> $rateLimitSettings */
+            $rateLimitSettings = $settings->get('rate_limit');
+
+            if (!empty($httpCacheSettings['enabled'])) {
+                /** @var string $namespace */
+                $namespace = 'http_cache';
+
+                /** @var int $ttl */
+                $ttl = $httpCacheSettings['ttl'];
+
+                /** @var string $dir */
+                $dir = $httpCacheSettings['dir'];
+
+                return new FilesystemAdapter($namespace, $ttl, $dir);
             }
 
-            /** @var string $namespace */
-            $namespace = 'http_cache';
+            if (!empty($rateLimitSettings['enabled'])) {
+                /** @var string $rateLimitDir */
+                $rateLimitDir = $rateLimitSettings['dir'];
 
-            /** @var int $ttl */
-            $ttl = $httpCacheSettings['ttl'];
+                return new FilesystemAdapter('rate_limit', 0, $rateLimitDir);
+            }
 
-            /** @var string $dir */
-            $dir = $httpCacheSettings['dir'];
-
-            return new FilesystemAdapter($namespace, $ttl, $dir);
+            return new ArrayAdapter();
         },
     ]);
 };
