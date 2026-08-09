@@ -1,6 +1,8 @@
 services:
     slim:
-        image: php:8.3-alpine
+        # Custom image built from the Dockerfile: adds Xdebug on top of
+        # php:8.3-alpine (used by "composer test:coverage").
+        build: .
         working_dir: /var/www
         command: php -S 0.0.0.0:8080 -t public
         environment:
@@ -48,13 +50,13 @@ services:
 #          retries: 10
 #
 # The php:8.3-alpine image ships pdo_sqlite only. To use PostgreSQL (or
-# MySQL) build a custom image that also enables the driver, for example:
+# MySQL) add the missing PDO driver to the Dockerfile, for example:
 #
 #   FROM php:8.3-alpine
 #   RUN apk add --no-cache postgresql-dev \
 #       && docker-php-ext-install pdo_mysql pdo_pgsql
 #
-# and change "image: php:8.3-alpine" to "build: ." on the "slim" service.
+# then rebuild with "docker compose up -d --build".
 #
 # For MySQL the recipe is the same: image mysql:8.4, the mysql_data volume
 # mounted on /var/lib/mysql and port 3306 instead of 5432.

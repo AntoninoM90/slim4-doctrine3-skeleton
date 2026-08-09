@@ -1,6 +1,7 @@
 # Slim Framework 4 Skeleton Application with Doctrine ORM 3
 
 [![Build Status](https://github.com/AntoninoM90/slim4-doctrine-skeleton/workflows/Tests/badge.svg)](https://github.com/AntoninoM90/slim4-doctrine-skeleton/actions)
+[![codecov](https://codecov.io/gh/AntoninoM90/slim4-doctrine-skeleton/graph/badge.svg)](https://codecov.io/gh/AntoninoM90/slim4-doctrine-skeleton)
 
 Use this skeleton application to quickly setup and start working on a new Slim Framework 4 application. This application uses the latest Slim 4 with Slim PSR-7 implementation and PHP-DI container implementation. It also uses the Monolog logger.
 
@@ -40,6 +41,19 @@ Run this command in the application directory to run the test suite
 ```bash
 composer test
 ```
+
+To run the test suite with a code coverage report:
+
+```bash
+composer test:coverage
+```
+
+This requires Xdebug (or PCOV). The Docker image built from the `Dockerfile` ships
+Xdebug, so inside the container the command works out of the box. The HTML report is
+written to `var/coverage/` (open `var/coverage/index.html` in your browser) and a text
+summary is printed to the console; a machine-readable `var/coverage/clover.xml` is also
+generated. On every push to `main` the GitHub Actions workflow uploads the coverage to
+Codecov, which feeds the badge at the top of this file.
 
 That's it! Now go build something cool.
 

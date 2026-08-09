@@ -61,10 +61,15 @@ jobs:
               #run: vendor/bin/phpunit --coverage-clover clover.xml
               run: vendor/bin/phpunit --coverage-text --coverage-clover clover.xml
 
-            # - name: Upload coverage results to Coveralls
-            #   if: matrix.analysis
-            #   env:
-            #       COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            #   run: |
-            #       composer require php-coveralls/php-coveralls -n -W
-            #       vendor/bin/php-coveralls --coverage_clover=clover.xml -v
+            - name: Upload coverage to Codecov
+              if: matrix.analysis
+              uses: codecov/codecov-action@v5
+              with:
+                  files: clover.xml
+                  # Public repositories can rely on the Codecov GitHub App.
+                  # If the repository is not connected yet, add a
+                  # CODECOV_TOKEN secret (see https://about.codecov.io/) and
+                  # uncomment the line below.
+                  # token: ${{ secrets.CODECOV_TOKEN }}
+                  fail_ci_if_error: false
+                  verbose: false
