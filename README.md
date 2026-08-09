@@ -68,6 +68,27 @@ error details are displayed; in `prod` the level is `INFO` and error details are
 When running under Docker Compose, log lines are also mirrored to stdout, so they are
 visible with `docker compose logs slim`.
 
+## HTTP Response Caching
+
+The application can cache HTTP `GET`/`HEAD` responses in a Symfony Cache pool.
+It is **disabled by default**; to enable it, set `APP_HTTP_CACHE=1` in your
+`.env` file (or change the `http_cache.enabled` value in `app/settings.php`):
+
+```bash
+APP_HTTP_CACHE=1
+```
+
+When enabled:
+
+- only `GET`/`HEAD` requests are cached, keyed by the full request URI;
+- requests carrying an `Authorization` or `Cookie` header are never cached;
+- only successful (2xx) responses without a `Set-Cookie` header are stored;
+- cached responses expire after the `http_cache.ttl` (60 seconds by default)
+  and are stored in the `http_cache.dir` directory (`var/cache/http`);
+- responses handled by the cache layer carry an `X-Cache` header with one of
+  the values `HIT` (served from cache), `MISS` (stored on first request) or
+  `SKIP` (the request is not cacheable).
+
 ## Database Configuration
 
 The database connection is configured in `app/settings.php` under the `doctrine` key. The skeleton ships with SQLite out of the box:

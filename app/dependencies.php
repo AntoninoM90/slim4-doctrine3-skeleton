@@ -10,9 +10,11 @@ use Doctrine\ORM\ORMSetup;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\Adapter\PhpFilesAdapter;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -117,6 +119,33 @@ return function (
             return Validation::createValidatorBuilder()
                 ->enableAttributeMapping()
                 ->getValidator();
+        },
+
+        // HTTP response cache pool (Symfony Cache). While the cache is
+        // disabled (http_cache.enabled = false, the default) the pool is an
+        // ephemeral ArrayAdapter; when enabled, a FilesystemAdapter persists
+        // responses in var/cache/http.
+        CacheItemPoolInterface::class => function (ContainerInterface $c): CacheItemPoolInterface {
+            /** @var SettingsInterface $settings */
+            $settings = $c->get(SettingsInterface::class);
+
+            /** @var array<string, mixed> $httpCacheSettings */
+            $httpCacheSettings = $settings->get('http_cache');
+
+            if (!($httpCacheSettings['enabled'] ?? false)) {
+                return new ArrayAdapter();
+            }
+
+            /** @var string $namespace */
+            $namespace = 'http_cache';
+
+            /** @var int $ttl */
+            $ttl = $httpCacheSettings['ttl'];
+
+            /** @var string $dir */
+            $dir = $httpCacheSettings['dir'];
+
+            return new FilesystemAdapter($namespace, $ttl, $dir);
         },
     ]);
 };

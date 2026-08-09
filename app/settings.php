@@ -63,6 +63,17 @@ return function (ContainerBuilder $containerBuilder) {
                         'default' => $connection,
                     ],
                 ],
+
+                // HTTP response cache settings
+                'http_cache' => [
+                    // Cache HTTP responses only when explicitly enabled via
+                    // the APP_HTTP_CACHE environment variable (default: off)
+                    'enabled' => (bool) Environment::get('APP_HTTP_CACHE', false),
+                    // Time-to-live for cached responses, in seconds
+                    'ttl' => 60,
+                    // Directory where cached responses are stored
+                    'dir' => __DIR__ . '/../var/cache/http',
+                ],
             ]);
         }
     ]);
