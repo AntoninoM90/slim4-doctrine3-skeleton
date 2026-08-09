@@ -15,7 +15,6 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Symfony\Component\Cache\Adapter\PhpFilesAdapter;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -66,6 +65,22 @@ return function (
             /** @var array $doctrineSettings */
             $doctrineSettings = $settings->get('doctrine');
 
+            /** @var string $cacheDir */
+            $cacheDir = $doctrineSettings['cache_dir'];
+
+            // Doctrine ORM cache pools: metadata, DQL queries, results and
+            // hydration. In dev mode they are request-local (ArrayAdapter);
+            // in production each cache type gets its own persistent
+            // filesystem pool in var/cache/doctrine, so entries can be
+            // invalidated independently.
+            $cachePool = static function (string $namespace) use ($doctrineSettings, $cacheDir): CacheItemPoolInterface {
+                if ($doctrineSettings['dev_mode']) {
+                    return new ArrayAdapter();
+                }
+
+                return new FilesystemAdapter($namespace, 0, $cacheDir);
+            };
+
             // Create the configuration for annotation metadata
             $config = ORMSetup::createAttributeMetadataConfiguration(
                 $doctrineSettings['metadata_dirs'],
@@ -75,31 +90,17 @@ return function (
                 false
             );
 
-            // Set cache
-            if ($doctrineSettings['dev_mode']) {
-                $metadataCache = new ArrayAdapter();
-                $queryCache = new ArrayAdapter();
-                $resultCache = new ArrayAdapter();
-            } else {
-                $metadataCache = new PhpFilesAdapter('doctrine_metadata');
-                $queryCache = new PhpFilesAdapter('doctrine_queries');
-                $resultCache = new PhpFilesAdapter('doctrine_cache');
-            }
-
             // Set metadata cache
-            $config->setMetadataCache(
-                $metadataCache
-            );
+            $config->setMetadataCache($cachePool('doctrine_metadata'));
 
             // Set query cache
-            $config->setQueryCache(
-                $queryCache
-            );
+            $config->setQueryCache($cachePool('doctrine_queries'));
 
             // Set result cache
-            $config->setResultCache(
-                $resultCache
-            );
+            $config->setResultCache($cachePool('doctrine_results'));
+
+            // Set hydration cache
+            $config->setHydrationCache($cachePool('doctrine_hydration'));
 
             // configuring the database connection
             $connection = DriverManager::getConnection(

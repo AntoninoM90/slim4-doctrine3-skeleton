@@ -59,6 +59,11 @@ return function (ContainerBuilder $containerBuilder) {
 
                     'proxy_dir' => __DIR__ . '/../var/proxy',
 
+                    // Directory where the Doctrine cache pools (metadata,
+                    // queries, results and hydration) are stored when
+                    // dev_mode is false
+                    'cache_dir' => __DIR__ . '/../var/cache/doctrine',
+
                     'connections' => [
                         'default' => $connection,
                     ],
