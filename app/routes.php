@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Actions\Health\HealthAction;
 use App\Application\Actions\User\ListUsersAction;
 use App\Application\Actions\User\ViewUserAction;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -22,6 +23,8 @@ return function (App $app) use ($id) {
         $response->getBody()->write('Hello world!');
         return $response;
     });
+
+    $app->get('/health', HealthAction::class)->setName('health-check');
 
     $app->group('/user', function (Group $group) use($id) {
         $group->get('s', ListUsersAction::class)->setName('users-list');
