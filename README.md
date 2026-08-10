@@ -161,6 +161,38 @@ CORS settings (`allowed_methods`, `allowed_headers`, `exposed_headers`,
 `exposed_headers` list includes the rate limit headers, so browser clients can
 read them.
 
+## Security Headers
+
+A `SecurityHeadersMiddleware` adds HTTP security headers to every response
+produced inside the middleware stack (including CORS preflight and rate-limit
+responses). It is **enabled by default**; to disable it, set
+`APP_SECURITY_HEADERS=0` in your `.env` file (or the
+`security_headers.enabled` value in `app/settings.php`).
+
+The headers are configured under `security_headers.headers` in
+`app/settings.php` and default to:
+
+```php
+'X-Frame-Options' => 'DENY',
+'X-Content-Type-Options' => 'nosniff',
+'Referrer-Policy' => 'strict-origin-when-cross-origin',
+'Permissions-Policy' => 'geolocation=(), microphone=(), camera=()',
+'Cross-Origin-Opener-Policy' => 'same-origin',
+'Cross-Origin-Resource-Policy' => 'same-origin',
+```
+
+Two headers are intentionally **not** set by default:
+
+- `Content-Security-Policy` — the bundled Swagger UI (`/docs`) loads its
+  assets from a CDN and uses inline styles, so a policy would break it. Add a
+  policy that covers those sources if you want to enforce one.
+- `Strict-Transport-Security` — it must only be sent over HTTPS. Enable it in
+  production once the API is served over TLS.
+
+Note that responses produced by the error handler (404/405/500) are created
+outside the middleware stack and therefore do not carry these headers; add
+them in the error handler if you need them there.
+
 ## Database Configuration
 
 The database connection is configured in `app/settings.php` under the `doctrine` key. The skeleton ships with SQLite out of the box:

@@ -184,5 +184,14 @@ class AppRoutesTest extends TestCase
 
         $this->assertStringContainsString('swagger-ui', $body);
         $this->assertStringContainsString('/docs.json', $body);
+
+        // The inline style and script carry the same nonce that the security
+        // headers middleware embeds into the Content-Security-Policy header,
+        // so the browser accepts them without 'unsafe-inline'.
+        $this->assertSame(1, preg_match('/nonce="([a-f0-9]{32})"/', $body, $matches));
+        $this->assertStringContainsString(
+            "'nonce-" . $matches[1] . "'",
+            $response->getHeaderLine('Content-Security-Policy')
+        );
     }
 }

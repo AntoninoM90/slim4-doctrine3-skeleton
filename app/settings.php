@@ -121,6 +121,42 @@ return function (ContainerBuilder $containerBuilder) {
                     // Whether Access-Control-Allow-Credentials is sent
                     'allow_credentials' => true,
                 ],
+
+                // HTTP security headers settings
+                'security_headers' => [
+                    // Add security headers to every response when enabled via
+                    // the APP_SECURITY_HEADERS environment variable
+                    // (default: on)
+                    'enabled' => (bool) Environment::get('APP_SECURITY_HEADERS', true),
+                    // Headers added to every response. Add or remove entries
+                    // as needed.
+                    //
+                    // The Content-Security-Policy is compatible with the
+                    // bundled Swagger UI (served from unpkg.com): the
+                    // {nonce} placeholder is replaced per request by the
+                    // security headers middleware with a random nonce that
+                    // the /docs route also emits on its inline style and
+                    // script tags. Strict-Transport-Security is
+                    // intentionally omitted: it must only be sent over
+                    // HTTPS.
+                    'headers' => [
+                        'X-Frame-Options' => 'DENY',
+                        'X-Content-Type-Options' => 'nosniff',
+                        'Referrer-Policy' => 'strict-origin-when-cross-origin',
+                        'Permissions-Policy' => 'geolocation=(), microphone=(), camera=()',
+                        'Cross-Origin-Opener-Policy' => 'same-origin',
+                        'Cross-Origin-Resource-Policy' => 'same-origin',
+                        'Content-Security-Policy' =>
+                            "default-src 'self'; "
+                            . "script-src 'self' https://unpkg.com 'nonce-{nonce}'; "
+                            . "style-src 'self' 'unsafe-inline' https://unpkg.com; "
+                            . "img-src 'self' data: https://validator.swagger.io; "
+                            . "font-src 'self' data:; "
+                            . "connect-src 'self' https://validator.swagger.io; "
+                            . "object-src 'none'; "
+                            . "base-uri 'self'",
+                    ],
+                ],
             ]);
         }
     ]);
