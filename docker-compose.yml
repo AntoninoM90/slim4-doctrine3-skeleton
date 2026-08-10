@@ -4,7 +4,7 @@ services:
         # php:8.3-alpine (used by "composer test:coverage").
         build: .
         working_dir: /var/www
-        command: php -S 0.0.0.0:8080 -t public
+        command: php -S 0.0.0.0:8080 -t public public/index.php
         environment:
             docker: "true"
             # Database settings for PostgreSQL/MySQL (see examples below).

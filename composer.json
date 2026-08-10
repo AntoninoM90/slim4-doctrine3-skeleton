@@ -71,7 +71,7 @@
         }
     },
     "scripts": {
-        "start": "php -S localhost:8080 -t public",
+        "start": "php -S localhost:8080 -t public public/index.php",
         "doctrine": "php bin/doctrine.php",
         "test": "phpunit",
         "test:coverage": "@php -d xdebug.mode=coverage vendor/bin/phpunit --coverage-html var/coverage --coverage-clover var/coverage/clover.xml --coverage-text"
