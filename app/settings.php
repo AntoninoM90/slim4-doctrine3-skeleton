@@ -92,6 +92,35 @@ return function (ContainerBuilder $containerBuilder) {
                     // Directory where request counters are stored
                     'dir' => __DIR__ . '/../var/cache/rate_limit',
                 ],
+
+                // Cross-origin resource sharing (CORS) settings
+                'cors' => [
+                    // Handle cross-origin requests only when explicitly
+                    // enabled via the APP_CORS_ENABLED environment variable
+                    // (default: off)
+                    'enabled' => (bool) Environment::get('APP_CORS_ENABLED', false),
+                    // Origins allowed to make cross-origin requests, as a
+                    // comma-separated list (override via APP_CORS_ORIGINS)
+                    'allowed_origins' => array_values(array_filter(array_map(
+                        'trim',
+                        explode(',', (string) Environment::get(
+                            'APP_CORS_ORIGINS',
+                            'http://localhost:3000,http://localhost:5173,http://localhost:4200,'
+                            . 'http://127.0.0.1:3000,http://127.0.0.1:5173,http://127.0.0.1:4200'
+                        ))
+                    ))),
+                    // HTTP methods advertised in preflight responses
+                    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+                    // Request headers advertised in preflight responses
+                    'allowed_headers' => ['Content-Type', 'Authorization', 'X-Requested-With'],
+                    // Response headers exposed to browser clients
+                    'exposed_headers' => ['X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset'],
+                    // How long a preflight response may be cached by the
+                    // browser, in seconds
+                    'max_age' => 86400,
+                    // Whether Access-Control-Allow-Credentials is sent
+                    'allow_credentials' => true,
+                ],
             ]);
         }
     ]);

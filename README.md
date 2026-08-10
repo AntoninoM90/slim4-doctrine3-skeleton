@@ -119,6 +119,48 @@ When enabled:
 - the limits can be tuned with the `APP_RATE_LIMIT_MAX` and
   `APP_RATE_LIMIT_WINDOW` environment variables.
 
+## Cross-Origin Resource Sharing (CORS)
+
+The CORS middleware is **disabled by default**. To enable it, set
+`APP_CORS_ENABLED=1` in your `.env` file (or the `cors.enabled` value in
+`app/settings.php`); when disabled it is a no-op and every request is
+forwarded without any CORS handling.
+
+When enabled, the application accepts cross-origin requests from the origins
+listed under `cors.allowed_origins` in `app/settings.php`. By default these
+are common local development origins (`http://localhost:3000`,
+`http://localhost:5173`, `http://localhost:4200` and their `127.0.0.1`
+counterparts). To change the allow-list, set the `APP_CORS_ORIGINS`
+environment variable to a comma-separated list of origins:
+
+```bash
+APP_CORS_ORIGINS=https://app.example.com,https://admin.example.com
+```
+
+How the `CorsMiddleware` behaves:
+
+- requests without an `Origin` header (same-origin or non-browser clients)
+  are forwarded untouched;
+- preflight requests (an `OPTIONS` request carrying an
+  `Access-Control-Request-Method` header) from allowed origins are answered
+  directly with a `204` that advertises the allowed methods, headers and
+  `Access-Control-Max-Age`, and never reach the routing layer;
+- preflights from unknown origins get a `403 Forbidden`;
+- actual requests from allowed origins are processed normally and the
+  response receives `Access-Control-Allow-Origin` (echoing the concrete
+  origin, never `*`), `Access-Control-Allow-Credentials`,
+  `Access-Control-Expose-Headers` and a `Vary: Origin` header;
+- actual requests from unknown origins are still processed, but without CORS
+  headers, so the browser blocks the response client-side.
+
+Because the allowed origins are exact matches and the middleware echoes the
+requesting origin, the responses are safe to combine with
+`Access-Control-Allow-Credentials: true`, which is sent by default. The other
+CORS settings (`allowed_methods`, `allowed_headers`, `exposed_headers`,
+`max_age` and `allow_credentials`) can be tuned in `app/settings.php`. The
+`exposed_headers` list includes the rate limit headers, so browser clients can
+read them.
+
 ## Database Configuration
 
 The database connection is configured in `app/settings.php` under the `doctrine` key. The skeleton ships with SQLite out of the box:
