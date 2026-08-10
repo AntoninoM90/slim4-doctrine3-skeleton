@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Actions\Health\HealthAction;
 use App\Application\Actions\User\ListUsersAction;
 use App\Application\Actions\User\ViewUserAction;
+use OpenApi\Generator;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
@@ -25,6 +26,58 @@ return function (App $app) use ($id) {
     });
 
     $app->get('/health', HealthAction::class)->setName('health-check');
+
+    $app->get('/docs.json', function (Request $request, Response $response) {
+        $openApi = (new Generator())->generate([__DIR__ . '/../src']);
+
+        if ($openApi === null) {
+            return $response->withStatus(500, 'Unable to generate the OpenAPI specification.');
+        }
+
+        $response->getBody()->write($openApi->toJson());
+
+        return $response->withHeader('Content-Type', 'application/json');
+    });
+
+    $app->get('/docs', function (Request $request, Response $response) {
+        $html = <<<'HTML'
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>API Documentation - Swagger UI</title>
+            <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+            <style>
+                html { box-sizing: border-box; overflow-y: scroll; }
+                *, *::before, *::after { box-sizing: inherit; }
+                body { margin: 0; background: #fafafa; }
+            </style>
+        </head>
+        <body>
+            <div id="swagger-ui"></div>
+            <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+            <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+            <script>
+                window.onload = function () {
+                    window.ui = SwaggerUIBundle({
+                        url: '/docs.json',
+                        dom_id: '#swagger-ui',
+                        presets: [
+                            SwaggerUIBundle.presets.apis,
+                            SwaggerUIStandalonePreset,
+                        ],
+                        layout: 'StandaloneLayout',
+                    });
+                };
+            </script>
+        </body>
+        </html>
+        HTML;
+
+        $response->getBody()->write($html);
+
+        return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
+    });
 
     $app->group('/user', function (Group $group) use($id) {
         $group->get('s', ListUsersAction::class)->setName('users-list');

@@ -324,3 +324,41 @@ php bin/doctrine.php migrations:diff
 ```
 
 In a Symfony application the same commands are available as `bin/console doctrine:schema:update --dump-sql` / `--force`, `bin/console doctrine:schema:create`, `bin/console doctrine:validate-schema`, etc.
+
+## API Documentation (Swagger/OpenAPI)
+
+The API is documented with [`zircote/swagger-php`](https://github.com/zircote/swagger-php) and exposed through Swagger UI.
+
+Start the application, then open:
+
+- `http://localhost:8080/docs` — interactive Swagger UI
+- `http://localhost:8080/docs.json` — the raw OpenAPI specification (JSON)
+
+Global metadata (API info, servers, schemas, tags) lives in `src/Application/Documentation/OpenApiDocumentation.php`. Endpoints are documented with `#[OA\*]` attributes directly on the action classes, for example `src/Application/Actions/User/ListUsersAction.php`:
+
+```php
+use OpenApi\Attributes as OA;
+
+#[OA\Get(
+    path: '/users',
+    tags: ['Users'],
+    summary: 'List all users',
+    operationId: 'listUsers',
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'List of users',
+            content: new OA\JsonContent(
+                type: 'array',
+                items: new OA\Items(ref: '#/components/schemas/User')
+            ),
+        ),
+    ],
+)]
+class ListUsersAction extends UserAction
+{
+    // ...
+}
+```
+
+Whenever you add or modify an endpoint, just add the corresponding `#[OA\*]` attributes and the documentation updates automatically.

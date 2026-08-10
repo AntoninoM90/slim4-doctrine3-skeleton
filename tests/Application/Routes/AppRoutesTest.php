@@ -151,4 +151,38 @@ class AppRoutesTest extends TestCase
         $this->assertSame(405, $payload['statusCode']);
         $this->assertSame('NOT_ALLOWED', $payload['error']['type']);
     }
+
+    public function testDocsJsonRouteRespondsWithOpenApiSpec()
+    {
+        $app = $this->getAppWithErrorHandling();
+
+        $response = $app->handle($this->createRequest('GET', '/docs.json'));
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('application/json', $response->getHeaderLine('Content-Type'));
+
+        $payload = json_decode((string) $response->getBody(), true);
+
+        $this->assertIsArray($payload);
+        $this->assertSame('3.0.0', $payload['openapi']);
+        $this->assertSame('Slim 4 Doctrine 3 Skeleton API', $payload['info']['title']);
+        $this->assertArrayHasKey('/health', $payload['paths']);
+        $this->assertArrayHasKey('/users', $payload['paths']);
+        $this->assertArrayHasKey('/user/{id}', $payload['paths']);
+        $this->assertArrayHasKey('User', $payload['components']['schemas']);
+    }
+
+    public function testDocsRouteServesSwaggerUiHtml()
+    {
+        $app = $this->getAppWithErrorHandling();
+
+        $response = $app->handle($this->createRequest('GET', '/docs'));
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $body = (string) $response->getBody();
+
+        $this->assertStringContainsString('swagger-ui', $body);
+        $this->assertStringContainsString('/docs.json', $body);
+    }
 }
