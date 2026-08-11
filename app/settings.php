@@ -164,6 +164,21 @@ return function (ContainerBuilder $containerBuilder) {
                     // the "start" script in composer.json).
                     'remove' => ['Server', 'X-Powered-By'],
                 ],
+
+                // Force HTTPS redirect settings
+                'https' => [
+                    // Redirect HTTP requests to HTTPS only when the
+                    // application runs in production (APP_ENV=prod); override
+                    // via the APP_FORCE_HTTPS environment variable
+                    'enabled' => (bool) Environment::get('APP_FORCE_HTTPS', $appEnv === 'prod'),
+                    // HTTP status code used for the redirect (301 or 308;
+                    // 308 preserves the request method and body)
+                    'status_code' => 308,
+                    // Trust the X-Forwarded-Proto header set by a trusted
+                    // reverse proxy (nginx, Caddy, ...) when determining
+                    // whether the request is HTTPS
+                    'trust_forwarded_proto' => true,
+                ],
             ]);
         }
     ]);
