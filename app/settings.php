@@ -156,6 +156,13 @@ return function (ContainerBuilder $containerBuilder) {
                             . "object-src 'none'; "
                             . "base-uri 'self'",
                     ],
+                    // Response headers stripped from every response, as
+                    // defense in depth. Note that the X-Powered-By header
+                    // added by PHP itself is injected by the SAPI when the
+                    // response is sent and cannot be removed here: disable
+                    // it with expose_php=Off in the PHP configuration (see
+                    // the "start" script in composer.json).
+                    'remove' => ['Server', 'X-Powered-By'],
                 ],
             ]);
         }

@@ -16,12 +16,14 @@ use function str_replace;
 
 /**
  * Add HTTP security headers to every response produced inside the middleware
- * stack (including CORS preflight and rate-limit responses).
+ * stack (including CORS preflight and rate-limit responses) and strip
+ * configured headers (e.g. Server, X-Powered-By) that reach the response.
  *
- * The headers are configured under the `security_headers.headers` setting.
- * When the `security_headers.enabled` setting is false the middleware is a
- * no-op and the request is forwarded untouched. When no headers are
- * configured the response is left unchanged as well.
+ * The headers are configured under the `security_headers.headers` setting,
+ * the headers to remove under `security_headers.remove`. When the
+ * `security_headers.enabled` setting is false the middleware is a no-op and
+ * the request is forwarded untouched. When no headers are configured the
+ * response is left unchanged as well.
  */
 final class SecurityHeadersMiddleware implements MiddlewareInterface
 {
@@ -43,7 +45,9 @@ final class SecurityHeadersMiddleware implements MiddlewareInterface
 
         $headers = $this->headerMap($securitySettings['headers'] ?? []);
 
-        if ($headers === []) {
+        $remove = (array) ($securitySettings['remove'] ?? []);
+
+        if ($headers === [] && $remove === []) {
             return $handler->handle($request);
         }
 
@@ -55,6 +59,10 @@ final class SecurityHeadersMiddleware implements MiddlewareInterface
         $request = $request->withAttribute('cspNonce', $nonce);
 
         $response = $handler->handle($request);
+
+        foreach ($remove as $name) {
+            $response = $response->withoutHeader((string) $name);
+        }
 
         foreach ($headers as $name => $value) {
             $response = $response->withHeader($name, str_replace('{nonce}', $nonce, $value));

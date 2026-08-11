@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Application\Middleware;
 
+use App\Application\Middleware\SecurityHeadersMiddleware;
+use App\Application\Settings\Settings;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
+use Slim\Psr7\Response as SlimResponse;
 use Tests\TestCase;
 
 class SecurityHeadersMiddlewareTest extends TestCase
@@ -88,5 +94,35 @@ class SecurityHeadersMiddlewareTest extends TestCase
         $this->assertEquals(204, $response->getStatusCode());
         $this->assertSame('DENY', $response->getHeaderLine('X-Frame-Options'));
         $this->assertSame('http://localhost:3000', $response->getHeaderLine('Access-Control-Allow-Origin'));
+    }
+
+    public function testConfiguredResponseHeadersAreRemoved()
+    {
+        $settings = new Settings([
+            'security_headers' => [
+                'enabled' => true,
+                'headers' => ['X-Frame-Options' => 'DENY'],
+                'remove' => ['Server', 'X-Powered-By'],
+            ],
+        ]);
+
+        $handler = new class implements RequestHandler {
+            public function handle(Request $request): Response
+            {
+                return (new SlimResponse(200))
+                    ->withHeader('Server', 'Apache/2.4.62 (Ubuntu)')
+                    ->withHeader('X-Powered-By', 'PHP/8.3.0')
+                    ->withHeader('X-Custom', 'keep');
+            }
+        };
+
+        $middleware = new SecurityHeadersMiddleware($settings);
+
+        $response = $middleware->process($this->createRequest('GET', '/'), $handler);
+
+        $this->assertSame('', $response->getHeaderLine('Server'));
+        $this->assertSame('', $response->getHeaderLine('X-Powered-By'));
+        $this->assertSame('keep', $response->getHeaderLine('X-Custom'));
+        $this->assertSame('DENY', $response->getHeaderLine('X-Frame-Options'));
     }
 }

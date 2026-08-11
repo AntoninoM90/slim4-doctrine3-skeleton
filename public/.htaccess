@@ -5,6 +5,12 @@ Options All -Indexes
     Require all denied
 </Files>
 
+# Don't disclose the PHP version via the X-Powered-By header
+# (Apache mod_php only; also see "php -d expose_php=0" in composer.json).
+<IfModule mod_php.c>
+    php_flag expose_php off
+</IfModule>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
