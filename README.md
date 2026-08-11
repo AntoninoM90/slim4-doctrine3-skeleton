@@ -200,10 +200,12 @@ read them.
 
 ## Security Headers
 
-A `SecurityHeadersMiddleware` adds HTTP security headers to every response
-produced inside the middleware stack (including CORS preflight and rate-limit
-responses). It is **enabled by default**; to disable it, set
-`APP_SECURITY_HEADERS=0` in your `.env` file (or the
+A `SecurityHeadersMiddleware` hardens every response produced inside the
+middleware stack (including CORS preflight, rate-limit and HTTPS redirect
+responses): it adds the configured security headers, substitutes the
+`{nonce}` placeholder with a fresh per-request nonce, and strips the headers
+listed under `security_headers.remove`. It is **enabled by default**; to
+disable it, set `APP_SECURITY_HEADERS=0` in your `.env` file (or the
 `security_headers.enabled` value in `app/settings.php`).
 
 The headers are configured under `security_headers.headers` in
@@ -216,19 +218,73 @@ The headers are configured under `security_headers.headers` in
 'Permissions-Policy' => 'geolocation=(), microphone=(), camera=()',
 'Cross-Origin-Opener-Policy' => 'same-origin',
 'Cross-Origin-Resource-Policy' => 'same-origin',
+'Content-Security-Policy' =>
+    "default-src 'self'; "
+    . "script-src 'self' https://unpkg.com 'nonce-{nonce}'; "
+    . "style-src 'self' 'unsafe-inline' https://unpkg.com; "
+    . "img-src 'self' data: https://validator.swagger.io; "
+    . "font-src 'self' data:; "
+    . "connect-src 'self' https://validator.swagger.io; "
+    . "object-src 'none'; "
+    . "base-uri 'self'",
 ```
 
-Two headers are intentionally **not** set by default:
+### Content-Security-Policy and nonces
 
-- `Content-Security-Policy` — the bundled Swagger UI (`/docs`) loads its
-  assets from a CDN and uses inline styles, so a policy would break it. Add a
-  policy that covers those sources if you want to enforce one.
-- `Strict-Transport-Security` — it must only be sent over HTTPS. Enable it in
-  production once the API is served over TLS.
+The `Content-Security-Policy` is compatible with the bundled Swagger UI
+(`/docs`), which loads its assets from `unpkg.com` and relies on inline
+styles plus a small inline initializer script. To allow those inline `style`
+and `script` elements without weakening the policy with `'unsafe-inline'`,
+the middleware:
+
+- generates a random **nonce** for every request and substitutes it into the
+  `{nonce}` placeholder of the policy;
+- exposes the same nonce as the `cspNonce` request attribute, which the
+  `/docs` route renders on its inline `<style nonce="...">` and
+  `<script nonce="...">` elements.
+
+`'unsafe-inline'` is only present in `style-src` (Swagger UI sets dynamic
+inline `style` attributes on its elements); `script-src` allows neither
+inline scripts nor `eval`. To tighten the policy, edit the value in
+`app/settings.php`; the `{nonce}` placeholder is optional.
+
+### Headers removed from every response
+
+The `security_headers.remove` setting lists headers stripped from every
+response (default: `Server` and `X-Powered-By`), as defense in depth for
+headers that reach the response object. Note that the `X-Powered-By` header
+injected by PHP itself is added by the SAPI when the response is sent and
+**cannot** be removed from the response object: disable it with
+`expose_php=Off` in your PHP configuration. The skeleton's `composer start`
+script, the `docker-compose.yml` command and `public/.htaccess` already pass
+`expose_php=0`.
+
+One header is intentionally **not** set by default:
+
+- `Strict-Transport-Security` — it must only be sent over HTTPS. Send it in
+  production, ideally together with the force-HTTPS middleware below.
 
 Note that responses produced by the error handler (404/405/500) are created
 outside the middleware stack and therefore do not carry these headers; add
 them in the error handler if you need them there.
+
+## Force HTTPS
+
+A `ForceHttpsMiddleware` redirects every HTTP request to its HTTPS equivalent
+with a `308` permanent redirect (which preserves the request method and
+body). It is **enabled only in production** (`APP_ENV=prod`); override it
+with `APP_FORCE_HTTPS=1` (or `0`) in your `.env` file, or edit the `https`
+section in `app/settings.php`:
+
+- `enabled` (`APP_FORCE_HTTPS`) — enable the redirect (default: on in
+  `prod`, off elsewhere);
+- `status_code` — `308` by default; `301` is a common alternative;
+- `trust_forwarded_proto` — when behind a trusted reverse proxy (nginx,
+  Caddy, ...), a request is also considered HTTPS when it carries an
+  `X-Forwarded-Proto: https` header (default `true`).
+
+The middleware is registered directly inside `SecurityHeadersMiddleware`, so
+the redirect responses carry the security headers too.
 
 ## Database Configuration
 
