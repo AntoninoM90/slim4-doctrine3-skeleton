@@ -91,33 +91,70 @@ When enabled:
 
 ## Rate Limiting
 
-The application can rate-limit requests per client IP address (or per user id,
-when the request carries one) with a fixed-window counter backed by a Symfony
-Cache pool.
-
-It is **disabled by default**; to enable it, set `APP_RATE_LIMIT=1`
-in your `.env` file (or change the `rate_limit.enabled` value in
+The application can rate-limit requests with a **fixed-window counter**, keyed
+per client IP address (or per user id when the request carries one), backed by
+a Symfony Cache pool. It is **disabled by default**; to enable it, set
+`APP_RATE_LIMIT=1` in your `.env` file (or the `rate_limit.enabled` value in
 `app/settings.php`):
 
 ```bash
 APP_RATE_LIMIT=1
 ```
 
-When enabled:
+The behaviour is configured under the `rate_limit` key in
+`app/settings.php`, each option with an environment variable counterpart:
 
-- every request counts against a fixed window of `rate_limit.window` seconds
-  (60 by default); once `rate_limit.limit` requests (60 by default) are used
-  up, the client receives a `429 Too Many Requests` response;
-- the requestor key is the client IP address, unless the request carries a
-  user id (via the `user_id` request attribute or the `user_id` session key),
-  in which case the limit applies to that user instead;
-- allowed responses carry `X-RateLimit-Limit`, `X-RateLimit-Remaining` and
-  `X-RateLimit-Reset` headers; limited responses also carry a `Retry-After`
-  header;
-- counters expire at the end of each window and are stored in the
-  `rate_limit.dir` directory (`var/cache/rate_limit`);
-- the limits can be tuned with the `APP_RATE_LIMIT_MAX` and
-  `APP_RATE_LIMIT_WINDOW` environment variables.
+- `enabled` (`APP_RATE_LIMIT`, default `false`) — when false the middleware
+  is a no-op and no `X-RateLimit-*` headers are added;
+- `limit` (`APP_RATE_LIMIT_MAX`, default `60`) — maximum number of requests
+  allowed in a window;
+- `window` (`APP_RATE_LIMIT_WINDOW`, default `60`) — window size in seconds;
+- `dir` — directory where the counters are stored (`var/cache/rate_limit`).
+
+### How the fixed window works
+
+Windows are aligned to **absolute time**, not to each client's first request:
+with `window = 60` a window always spans `HH:MM:00`–`HH:MM:59`. A request at
+`10:00:59` and one at `10:01:01` therefore fall in **different** windows even
+though they are only two seconds apart, while a burst at `10:00:01` and one at
+`10:00:59` share the same window. Each window starts over as soon as the clock
+passes its end; `X-RateLimit-Reset` reports the exact moment the current
+window ends.
+
+### How a request is counted
+
+- the requestor key is the **user id** when the request carries one (the
+  `user_id` request attribute or the `user_id` session key), otherwise the
+  **client IP** (the `ip_address` request attribute, or `REMOTE_ADDR`); an
+  auth middleware can set these attributes to rate-limit per account instead
+  of per IP;
+- every request increments the counter for the current window; the request
+  that would exceed the limit is rejected with `429 Too Many Requests`;
+- allowed responses carry `X-RateLimit-Limit` (the window limit),
+  `X-RateLimit-Remaining` (requests left in the window, down to `0`) and
+  `X-RateLimit-Reset` (unix timestamp of the window end);
+- limited responses carry a JSON body `{"message": "Too many requests"}` plus
+  `X-RateLimit-Limit`, `X-RateLimit-Reset` and `Retry-After` (seconds until
+  the window resets).
+
+### Example
+
+With `APP_RATE_LIMIT_MAX=3` and `APP_RATE_LIMIT_WINDOW=60`, three requests
+from the same IP within a minute are allowed (the third reports
+`X-RateLimit-Remaining: 0`); the fourth gets a `429` with `Retry-After`
+counting down to the next window boundary.
+
+### Storage
+
+Counters are stored in a Symfony `FilesystemAdapter` (PSR-6) pool in the
+`rate_limit.dir` directory; they expire `window` seconds after they are
+written. Item keys are sha256-hashed, so the client IP never appears in the
+cache directory. When HTTP response caching is also enabled, both features
+share a single filesystem pool (see `app/dependencies.php`), so the counters
+are then persisted inside the HTTP cache directory instead.
+
+`429` responses are produced inside the middleware stack, so they carry the
+same security headers as every other response (see "Security Headers").
 
 ## Cross-Origin Resource Sharing (CORS)
 
