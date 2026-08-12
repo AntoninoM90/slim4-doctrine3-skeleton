@@ -57,6 +57,139 @@ Codecov, which feeds the badge at the top of this file.
 
 That's it! Now go build something cool.
 
+## Usage Examples
+
+Start the application (or the Docker container), then the endpoints below are
+available:
+
+```bash
+composer start
+# or: docker compose up -d
+```
+
+All examples assume the application listens on `http://localhost:8080` and
+are formatted with `curl`. Responses are pretty-printed JSON wrapped in an
+envelope: successful responses carry the payload under `data`, failures under
+`error`:
+
+```json
+{ "statusCode": 200, "data": { "id": 1 } }
+{ "statusCode": 404, "error": { "type": "RESOURCE_NOT_FOUND", "description": "..." } }
+```
+
+### Health check
+
+```bash
+curl http://localhost:8080/health
+```
+
+```json
+{
+    "statusCode": 200,
+    "data": {
+        "status": "ok",
+        "checks": {
+            "database": "ok",
+            "cache": "ok"
+        }
+    }
+}
+```
+
+### Root route
+
+```bash
+curl http://localhost:8080/
+```
+
+```
+Hello world!
+```
+
+### List users
+
+The skeleton ships with an empty database, so a fresh installation returns an
+empty list:
+
+```bash
+curl http://localhost:8080/users
+```
+
+```json
+{
+    "statusCode": 200,
+    "data": []
+}
+```
+
+### View a single user
+
+With no users in the database, any id is unknown:
+
+```bash
+curl http://localhost:8080/user/1
+```
+
+```json
+{
+    "statusCode": 404,
+    "error": {
+        "type": "RESOURCE_NOT_FOUND",
+        "description": "The user you requested does not exist."
+    }
+}
+```
+
+Once a user exists (persist an `App\Domain\User\User` entity and flush it,
+for example from a new migration), the endpoint returns the user without the
+`password` field:
+
+```bash
+curl http://localhost:8080/user/1
+```
+
+```json
+{
+    "statusCode": 200,
+    "data": {
+        "id": 1,
+        "username": "anna",
+        "emailAddress": "anna@example.com",
+        "firstName": "Anna",
+        "lastName": "Smith"
+    }
+}
+```
+
+### API documentation
+
+```bash
+curl http://localhost:8080/docs.json   # the OpenAPI specification (JSON)
+# then open http://localhost:8080/docs in your browser for the Swagger UI
+```
+
+### Rate limiting
+
+When rate limiting is enabled (see "Rate Limiting"), every allowed response
+carries the `X-RateLimit-*` headers and requests beyond the limit return
+`429 Too Many Requests`:
+
+```bash
+curl -i http://localhost:8080/users
+```
+
+```
+HTTP/1.1 200 OK
+...
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 59
+X-RateLimit-Reset: 1753876200
+```
+
+In production, HTTP requests are redirected to HTTPS with a `308` (see
+"Force HTTPS"), and every response carries the security headers described in
+"Security Headers".
+
 ## Environment and Logging
 
 Set `APP_ENV` in `.env` to select the environment: `dev` (default), `test` or `prod`.
