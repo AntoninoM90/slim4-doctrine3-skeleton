@@ -49,3 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Default implicit nullable values on PHP 8.4+.
 - Removed the unused `doctrine/annotations` dependency.
+- `User::getId()` and `User::jsonSerialize()` no longer throw on a newly
+  constructed (not yet persisted) entity: the `id` property is read through
+  the null coalescing operator, which does not fail on uninitialized typed
+  properties.

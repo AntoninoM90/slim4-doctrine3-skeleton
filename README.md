@@ -509,7 +509,7 @@ class Category
 
     public function getId(): ?int
     {
-        return $this->id;
+        return $this->id ?? null;
     }
 
     public function getName(): string
@@ -527,6 +527,12 @@ class Category
 ```
 
 Then generate a migration for the new table and apply it (see "Database Migrations" below).
+
+Note that `getId()` reads the identifier with the null coalescing operator
+(`?? null`): the `id` property is uninitialized until Doctrine hydrates the
+entity, so a plain `return $this->id;` would throw a
+`Typed property ... must not be accessed before initialization` error on a
+newly constructed (not yet persisted) entity.
 
 ## Database Migrations
 
