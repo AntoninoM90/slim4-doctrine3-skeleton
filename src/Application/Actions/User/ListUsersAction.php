@@ -22,6 +22,7 @@ use Psr\Http\Message\ResponseInterface as Response;
                 items: new OA\Items(ref: '#/components/schemas/User')
             ),
         ),
+        new OA\Response(response: 500, ref: '#/components/responses/InternalServerError'),
     ],
 )]
 class ListUsersAction extends UserAction

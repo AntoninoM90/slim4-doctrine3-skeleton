@@ -21,22 +21,13 @@ use Throwable;
         new OA\Response(
             response: 200,
             description: 'Application is healthy',
-            content: new OA\JsonContent(
-                type: 'object',
-                properties: [
-                    new OA\Property(property: 'status', type: 'string', enum: ['ok', 'unhealthy']),
-                    new OA\Property(
-                        property: 'checks',
-                        type: 'object',
-                        properties: [
-                            new OA\Property(property: 'database', type: 'string', enum: ['ok', 'error']),
-                            new OA\Property(property: 'cache', type: 'string', enum: ['ok', 'error']),
-                        ],
-                    ),
-                ],
-            ),
+            content: new OA\JsonContent(ref: '#/components/schemas/HealthCheck'),
         ),
-        new OA\Response(response: 503, description: 'Application is unhealthy'),
+        new OA\Response(
+            response: 503,
+            description: 'Application is unhealthy',
+            content: new OA\JsonContent(ref: '#/components/schemas/HealthCheck'),
+        ),
     ],
 )]
 class HealthAction extends Action

@@ -28,7 +28,21 @@ use Psr\Http\Message\ResponseInterface as Response;
             description: 'A single user',
             content: new OA\JsonContent(ref: '#/components/schemas/User')
         ),
-        new OA\Response(response: 404, description: 'User not found'),
+        new OA\Response(
+            response: 404,
+            description: 'User not found',
+            content: new OA\JsonContent(
+                ref: '#/components/schemas/ErrorResponse',
+                example: [
+                    'statusCode' => 404,
+                    'error' => [
+                        'type' => 'RESOURCE_NOT_FOUND',
+                        'description' => 'The user you requested does not exist.',
+                    ],
+                ],
+            ),
+        ),
+        new OA\Response(response: 500, ref: '#/components/responses/InternalServerError'),
     ],
 )]
 class ViewUserAction extends UserAction
