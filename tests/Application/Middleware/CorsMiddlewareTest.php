@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Application\Middleware;
 
+use App\Application\Middleware\CorsMiddleware;
+use App\Application\Settings\Settings;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
+use Slim\Psr7\Response as SlimResponse;
 use Tests\TestCase;
 
 class CorsMiddlewareTest extends TestCase
@@ -182,5 +188,122 @@ class CorsMiddlewareTest extends TestCase
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertSame('', $response->getHeaderLine('Access-Control-Allow-Origin'));
+    }
+
+    public function testDisabledAllowCredentialsOmitsCredentialsHeader()
+    {
+        $middleware = $this->buildMiddleware([
+            'enabled' => true,
+            'allowed_origins' => [self::ALLOWED_ORIGIN],
+            'allow_credentials' => false,
+        ]);
+
+        $response = $middleware->process(
+            $this->createRequest('GET', self::ROOT_ROUTE, ['Origin' => self::ALLOWED_ORIGIN]),
+            $this->staticHandler()
+        );
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertSame(self::ALLOWED_ORIGIN, $response->getHeaderLine('Access-Control-Allow-Origin'));
+        $this->assertSame('', $response->getHeaderLine('Access-Control-Allow-Credentials'));
+    }
+
+    public function testMissingExposedHeadersOmitsExposeHeadersHeader()
+    {
+        $middleware = $this->buildMiddleware([
+            'enabled' => true,
+            'allowed_origins' => [self::ALLOWED_ORIGIN],
+        ]);
+
+        $response = $middleware->process(
+            $this->createRequest('GET', self::ROOT_ROUTE, ['Origin' => self::ALLOWED_ORIGIN]),
+            $this->staticHandler()
+        );
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertSame('', $response->getHeaderLine('Access-Control-Expose-Headers'));
+    }
+
+    public function testCustomMaxAgeIsReflectedInPreflight()
+    {
+        $middleware = $this->buildMiddleware([
+            'enabled' => true,
+            'allowed_origins' => [self::ALLOWED_ORIGIN],
+            'max_age' => 3600,
+        ]);
+
+        $response = $middleware->process(
+            $this->createPreflightRequest(),
+            $this->staticHandler()
+        );
+
+        $this->assertEquals(204, $response->getStatusCode());
+        $this->assertSame('3600', $response->getHeaderLine('Access-Control-Max-Age'));
+    }
+
+    public function testCustomMethodsAndHeadersAreReflectedInPreflight()
+    {
+        $middleware = $this->buildMiddleware([
+            'enabled' => true,
+            'allowed_origins' => [self::ALLOWED_ORIGIN],
+            'allowed_methods' => ['PATCH', 'DELETE'],
+            'allowed_headers' => ['X-Custom', 'X-Other'],
+        ]);
+
+        $response = $middleware->process(
+            $this->createPreflightRequest(),
+            $this->staticHandler()
+        );
+
+        $this->assertEquals(204, $response->getStatusCode());
+        $this->assertSame('PATCH, DELETE', $response->getHeaderLine('Access-Control-Allow-Methods'));
+        $this->assertSame('X-Custom, X-Other', $response->getHeaderLine('Access-Control-Allow-Headers'));
+    }
+
+    public function testPreflightVariesOnRequestMethodAndHeaders()
+    {
+        $middleware = $this->buildMiddleware([
+            'enabled' => true,
+            'allowed_origins' => [self::ALLOWED_ORIGIN],
+        ]);
+
+        $response = $middleware->process(
+            $this->createPreflightRequest(),
+            $this->staticHandler()
+        );
+
+        $vary = $response->getHeaderLine('Vary');
+
+        $this->assertEquals(204, $response->getStatusCode());
+        $this->assertStringContainsString('Origin', $vary);
+        $this->assertStringContainsString('Access-Control-Request-Method', $vary);
+        $this->assertStringContainsString('Access-Control-Request-Headers', $vary);
+    }
+
+    private function buildMiddleware(array $corsSettings): CorsMiddleware
+    {
+        return new CorsMiddleware(new Settings(['cors' => $corsSettings]));
+    }
+
+    private function createPreflightRequest(): Request
+    {
+        return $this->createRequest(
+            'OPTIONS',
+            self::ROOT_ROUTE,
+            [
+                'Origin' => self::ALLOWED_ORIGIN,
+                'Access-Control-Request-Method' => 'GET',
+            ]
+        );
+    }
+
+    private function staticHandler(): RequestHandler
+    {
+        return new class implements RequestHandler {
+            public function handle(Request $request): Response
+            {
+                return new SlimResponse(200);
+            }
+        };
     }
 }

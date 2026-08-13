@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Application\Middleware;
 
+use App\Application\Middleware\ResponseCacheMiddleware;
+use App\Application\Settings\Settings;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
+use Slim\Psr7\Response as SlimResponse;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Tests\TestCase;
 
 class ResponseCacheMiddlewareTest extends TestCase
@@ -106,5 +113,119 @@ class ResponseCacheMiddlewareTest extends TestCase
         $this->assertEquals(200, $firstResponse->getStatusCode());
         $this->assertSame('SKIP', $firstResponse->getHeaderLine('X-Cache'));
         $this->assertSame('SKIP', $secondResponse->getHeaderLine('X-Cache'));
+    }
+
+    public function testDisabledMiddlewareForwardsRequestWithoutXCacheHeader()
+    {
+        $middleware = new ResponseCacheMiddleware(new ArrayAdapter(), new Settings([
+            'http_cache' => ['enabled' => false, 'ttl' => 60],
+        ]));
+
+        $response = $middleware->process($this->createRequest('GET', '/'), $this->staticHandler());
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertFalse($response->hasHeader('X-Cache'));
+    }
+
+    public function testRequestWithCookieHeaderIsNotCached()
+    {
+        $middleware = new ResponseCacheMiddleware(new ArrayAdapter(), new Settings([
+            'http_cache' => ['enabled' => true, 'ttl' => 60],
+        ]));
+
+        $request = $this->createRequest('GET', '/')->withHeader('Cookie', 'foo=bar');
+
+        $firstResponse = $middleware->process($request, $this->staticHandler());
+        $secondResponse = $middleware->process($request, $this->staticHandler());
+
+        $this->assertSame('SKIP', $firstResponse->getHeaderLine('X-Cache'));
+        $this->assertSame('SKIP', $secondResponse->getHeaderLine('X-Cache'));
+    }
+
+    public function testHeadRequestIsCachedAcrossRequests()
+    {
+        $middleware = new ResponseCacheMiddleware(new ArrayAdapter(), new Settings([
+            'http_cache' => ['enabled' => true, 'ttl' => 60],
+        ]));
+
+        $request = $this->createRequest('HEAD', '/');
+
+        $firstResponse = $middleware->process($request, $this->staticHandler());
+        $secondResponse = $middleware->process($request, $this->staticHandler());
+
+        $this->assertSame('MISS', $firstResponse->getHeaderLine('X-Cache'));
+        $this->assertSame('HIT', $secondResponse->getHeaderLine('X-Cache'));
+    }
+
+    public function testResponseWithSetCookieIsNeverCached()
+    {
+        $middleware = new ResponseCacheMiddleware(new ArrayAdapter(), new Settings([
+            'http_cache' => ['enabled' => true, 'ttl' => 60],
+        ]));
+
+        $handler = new class implements RequestHandler {
+            public function handle(Request $request): Response
+            {
+                return (new SlimResponse(200))
+                    ->withHeader('Set-Cookie', 'session=abc; HttpOnly');
+            }
+        };
+
+        $request = $this->createRequest('GET', '/');
+
+        $firstResponse = $middleware->process($request, $handler);
+        $secondResponse = $middleware->process($request, $handler);
+
+        $this->assertSame('MISS', $firstResponse->getHeaderLine('X-Cache'));
+        $this->assertSame('MISS', $secondResponse->getHeaderLine('X-Cache'));
+    }
+
+    public function testRedirectResponseIsNeverCached()
+    {
+        $middleware = new ResponseCacheMiddleware(new ArrayAdapter(), new Settings([
+            'http_cache' => ['enabled' => true, 'ttl' => 60],
+        ]));
+
+        $handler = new class implements RequestHandler {
+            public function handle(Request $request): Response
+            {
+                return (new SlimResponse(302))->withHeader('Location', '/elsewhere');
+            }
+        };
+
+        $request = $this->createRequest('GET', '/');
+
+        $firstResponse = $middleware->process($request, $handler);
+        $secondResponse = $middleware->process($request, $handler);
+
+        $this->assertSame('MISS', $firstResponse->getHeaderLine('X-Cache'));
+        $this->assertSame('MISS', $secondResponse->getHeaderLine('X-Cache'));
+    }
+
+    public function testHitResponseCarriesExactlyOneXCacheHeader()
+    {
+        $middleware = new ResponseCacheMiddleware(new ArrayAdapter(), new Settings([
+            'http_cache' => ['enabled' => true, 'ttl' => 60],
+        ]));
+
+        $handler = $this->staticHandler();
+
+        $request = $this->createRequest('GET', '/');
+
+        $middleware->process($request, $handler);
+        $hitResponse = $middleware->process($request, $handler);
+
+        $this->assertSame('HIT', $hitResponse->getHeaderLine('X-Cache'));
+        $this->assertSame(['HIT'], $hitResponse->getHeaders()['X-Cache']);
+    }
+
+    private function staticHandler(): RequestHandler
+    {
+        return new class implements RequestHandler {
+            public function handle(Request $request): Response
+            {
+                return new SlimResponse(200);
+            }
+        };
     }
 }
