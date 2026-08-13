@@ -50,10 +50,30 @@ class OpenApiSpecTest extends TestCase
 
         $this->assertSame([200, 500], array_keys($operation['responses']));
 
+        $parameters = $operation['parameters'];
+
+        $this->assertSame(['page', 'perPage'], array_column($parameters, 'name'));
+        $this->assertSame(['query', 'query'], array_column($parameters, 'in'));
+        $this->assertFalse($parameters[0]['required']);
+        $this->assertFalse($parameters[1]['required']);
+        $this->assertSame('integer', $parameters[0]['schema']['type']);
+        $this->assertSame(1, $parameters[0]['schema']['minimum']);
+        $this->assertSame('integer', $parameters[1]['schema']['type']);
+        $this->assertSame(1, $parameters[1]['schema']['minimum']);
+        $this->assertSame(100, $parameters[1]['schema']['maximum']);
+
         $okSchema = $operation['responses'][200]['content']['application/json']['schema'];
 
-        $this->assertSame('array', $okSchema['type']);
-        $this->assertSame('#/components/schemas/User', $okSchema['items']['$ref']);
+        $this->assertSame('object', $okSchema['type']);
+
+        $items = $okSchema['properties']['items'];
+
+        $this->assertSame('array', $items['type']);
+        $this->assertSame('#/components/schemas/User', $items['items']['$ref']);
+        $this->assertSame(
+            '#/components/schemas/Pagination',
+            $okSchema['properties']['pagination']['$ref']
+        );
         $this->assertSame(
             '#/components/responses/InternalServerError',
             $operation['responses'][500]['$ref']
@@ -90,7 +110,10 @@ class OpenApiSpecTest extends TestCase
 
         $schemas = $spec['components']['schemas'];
 
-        $this->assertSame(['User', 'Error', 'ErrorResponse', 'HealthCheck'], array_keys($schemas));
+        $this->assertSame(
+            ['User', 'Error', 'ErrorResponse', 'HealthCheck', 'Pagination'],
+            array_keys($schemas)
+        );
 
         $this->assertSame(
             ['id', 'username', 'emailAddress', 'firstName', 'lastName'],
@@ -106,6 +129,10 @@ class OpenApiSpecTest extends TestCase
             $schemas['ErrorResponse']['properties']['error']['$ref']
         );
         $this->assertSame(['status', 'checks'], array_keys($schemas['HealthCheck']['properties']));
+        $this->assertSame(
+            ['total', 'page', 'perPage', 'totalPages'],
+            array_keys($schemas['Pagination']['properties'])
+        );
     }
 
     public function testDocumentedReusableResponses(): void

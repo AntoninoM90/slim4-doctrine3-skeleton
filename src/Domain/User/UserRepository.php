@@ -32,6 +32,33 @@ class UserRepository
     }
 
     /**
+     * Find users with pagination, ordered by id.
+     *
+     * @return array{users: list<User>, total: int}
+     */
+    public function findUsersWithPagination(int $limit = 10, int $offset = 0): array
+    {
+        $queryBuilder = $this->repository->createQueryBuilder('u');
+
+        $countQueryBuilder = clone $queryBuilder;
+        $countQueryBuilder->select('COUNT(u.id)');
+        $total = (int) $countQueryBuilder->getQuery()->getSingleScalarResult();
+
+        $queryBuilder
+            ->orderBy('u.id', 'ASC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset);
+
+        /** @var list<User> $users */
+        $users = $queryBuilder->getQuery()->getResult();
+
+        return [
+            'users' => $users,
+            'total' => $total,
+        ];
+    }
+
+    /**
      * @param int $id
      * @param int|null $lockMode
      * @param int|null $lockVersion

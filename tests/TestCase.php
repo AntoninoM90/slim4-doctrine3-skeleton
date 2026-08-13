@@ -118,6 +118,7 @@ class TestCase extends PHPUnit_TestCase
      * @param array  $headers
      * @param array  $cookies
      * @param array  $serverParams
+     * @param string $query
      * @return Request
      */
     protected function createRequest(
@@ -125,9 +126,10 @@ class TestCase extends PHPUnit_TestCase
         string $path,
         array $headers = ['HTTP_ACCEPT' => self::CONTENT_TYPE_JSON],
         array $cookies = [],
-        array $serverParams = []
+        array $serverParams = [],
+        string $query = ''
     ): Request {
-        $uri = new Uri('', '', 80, $path);
+        $uri = new Uri('', '', 80, $path, $query);
         $handle = fopen('php://temp', 'w+');
         $stream = (new StreamFactory())->createStreamFromResource($handle);
 

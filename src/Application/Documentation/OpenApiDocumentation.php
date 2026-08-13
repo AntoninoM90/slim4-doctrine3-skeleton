@@ -86,6 +86,17 @@ use OpenApi\Attributes as OA;
         ),
     ],
 )]
+#[OA\Schema(
+    schema: 'Pagination',
+    type: 'object',
+    description: 'Pagination metadata',
+    properties: [
+        new OA\Property(property: 'total', type: 'integer', format: 'int64'),
+        new OA\Property(property: 'page', type: 'integer'),
+        new OA\Property(property: 'perPage', type: 'integer'),
+        new OA\Property(property: 'totalPages', type: 'integer'),
+    ],
+)]
 #[OA\Response(
     response: 'InternalServerError',
     description: 'An unexpected error occurred.',

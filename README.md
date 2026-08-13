@@ -109,7 +109,7 @@ Hello world!
 ### List users
 
 The skeleton ships with an empty database, so a fresh installation returns an
-empty list:
+empty list wrapped in a pagination envelope:
 
 ```bash
 curl http://localhost:8080/users
@@ -118,8 +118,25 @@ curl http://localhost:8080/users
 ```json
 {
     "statusCode": 200,
-    "data": []
+    "data": {
+        "items": [],
+        "pagination": {
+            "total": 0,
+            "page": 1,
+            "perPage": 10,
+            "totalPages": 0
+        }
+    }
 }
+```
+
+The response is paginated: `items` holds the users of the requested page and
+`pagination` carries the total count plus page metadata. The optional `page`
+(default 1) and `perPage` (default 10, maximum 100) query parameters select the
+page and its size:
+
+```bash
+curl "http://localhost:8080/users?page=2&perPage=2"
 ```
 
 ### View a single user

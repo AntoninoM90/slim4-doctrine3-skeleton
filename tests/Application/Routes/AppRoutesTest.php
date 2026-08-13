@@ -170,6 +170,7 @@ class AppRoutesTest extends TestCase
         $this->assertArrayHasKey('/users', $payload['paths']);
         $this->assertArrayHasKey('/user/{id}', $payload['paths']);
         $this->assertArrayHasKey('User', $payload['components']['schemas']);
+        $this->assertArrayHasKey('Pagination', $payload['components']['schemas']);
     }
 
     public function testDocsRouteServesSwaggerUiHtml()

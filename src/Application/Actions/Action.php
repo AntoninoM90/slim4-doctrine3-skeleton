@@ -160,4 +160,27 @@ abstract class Action
             ->withHeader('Content-Type', 'application/json')
             ->withStatus($payload->getStatusCode());
     }
+
+    /**
+     * Read a positive integer query parameter, falling back to a default
+     * value when the parameter is missing or invalid.
+     *
+     * @param array<string, mixed> $params
+     */
+    protected function positiveInt(array $params, string $name, int $default, ?int $max = null): int
+    {
+        $value = $params[$name] ?? null;
+
+        if (!is_numeric($value) || (int) $value < 1) {
+            return $default;
+        }
+
+        $number = (int) $value;
+
+        if ($max !== null && $number > $max) {
+            return $max;
+        }
+
+        return $number;
+    }
 }
