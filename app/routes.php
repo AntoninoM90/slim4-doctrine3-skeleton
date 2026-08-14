@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Actions\Health\HealthAction;
 use App\Application\Actions\User\CreateUserAction;
 use App\Application\Actions\User\DeleteUserAction;
+use App\Application\Actions\User\ChangePasswordAction;
 use App\Application\Actions\User\ListUsersAction;
 use App\Application\Actions\User\UpdateUserAction;
 use App\Application\Actions\User\ViewUserAction;
@@ -95,6 +96,7 @@ return function (App $app) use ($id) {
         $group->post('', CreateUserAction::class)->setName('user-create');
         $group->get($id, ViewUserAction::class)->setName('user-view');
         $group->patch($id, UpdateUserAction::class)->setName('user-update');
+        $group->patch($id . '/password', ChangePasswordAction::class)->setName('user-password');
         $group->delete($id, DeleteUserAction::class)->setName('user-delete');
     });
 };

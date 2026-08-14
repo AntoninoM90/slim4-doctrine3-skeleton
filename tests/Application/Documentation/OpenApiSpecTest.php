@@ -213,6 +213,43 @@ class OpenApiSpecTest extends TestCase
         );
     }
 
+    public function testChangePasswordOperationDocumentsItsResponses(): void
+    {
+        $spec = $this->getSpec();
+
+        $operation = $spec['paths']['/user/{id}/password']['patch'];
+
+        $this->assertSame([200, 404, 422, 500], array_keys($operation['responses']));
+        $this->assertSame(
+            '#/components/schemas/User',
+            $operation['responses'][200]['content']['application/json']['schema']['$ref']
+        );
+
+        $notFound = $operation['responses'][404]['content']['application/json'];
+
+        $this->assertSame('#/components/schemas/ErrorResponse', $notFound['schema']['$ref']);
+        $this->assertSame(404, $notFound['example']['statusCode']);
+        $this->assertSame('RESOURCE_NOT_FOUND', $notFound['example']['error']['type']);
+
+        $validation = $operation['responses'][422]['content']['application/json'];
+
+        $this->assertSame('#/components/schemas/ErrorResponse', $validation['schema']['$ref']);
+        $this->assertSame(422, $validation['example']['statusCode']);
+        $this->assertSame('VALIDATION_ERROR', $validation['example']['error']['type']);
+        $this->assertArrayHasKey('newPassword', $validation['example']['error']['details']);
+
+        $this->assertSame(
+            '#/components/responses/InternalServerError',
+            $operation['responses'][500]['$ref']
+        );
+
+        $requestSchema = $operation['requestBody']['content']['application/json']['schema'];
+
+        $this->assertTrue($operation['requestBody']['required']);
+        $this->assertSame(['newPassword'], $requestSchema['required']);
+        $this->assertSame(['newPassword'], array_keys($requestSchema['properties']));
+    }
+
     public function testDocumentedSchemas(): void
     {
         $spec = $this->getSpec();

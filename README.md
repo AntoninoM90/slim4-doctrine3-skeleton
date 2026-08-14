@@ -257,6 +257,32 @@ curl -i -X DELETE http://localhost:8080/user/1
 HTTP/1.1 204 No Content
 ```
 
+### Change a user password
+
+An admin can reset a user's password without knowing the current one. The new
+password is stored hashed with bcrypt and never returned:
+
+```bash
+curl -X PATCH http://localhost:8080/user/1/password \
+  -H "Content-Type: application/json" \
+  -d '{"newPassword":"new-password-123"}'
+```
+
+```json
+{
+    "statusCode": 200,
+    "data": {
+        "id": 1,
+        "username": "anna",
+        "emailAddress": "anna@example.com",
+        "firstName": "Anna",
+        "lastName": "Smith"
+    }
+}
+```
+
+A password shorter than 8 characters is a validation error (`422`).
+
 ### API documentation
 
 ```bash
