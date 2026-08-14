@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Application\Constraint\UniqueUserFieldValidator;
 use App\Application\Settings\SettingsInterface;
+use App\Domain\User\UserRepository;
 use DI\ContainerBuilder;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
@@ -15,6 +17,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Validator\ContainerConstraintValidatorFactory;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -116,10 +119,20 @@ return function (
         },
 
         // Symfony Validator (attribute mapping)
-        ValidatorInterface::class => function (): ValidatorInterface {
+        ValidatorInterface::class => function (ContainerInterface $c): ValidatorInterface {
             return Validation::createValidatorBuilder()
                 ->enableAttributeMapping()
+                ->setConstraintValidatorFactory(
+                    new ContainerConstraintValidatorFactory($c)
+                )
                 ->getValidator();
+        },
+
+        // Validator for the UniqueUserField constraint.
+        UniqueUserFieldValidator::class => function (ContainerInterface $c): UniqueUserFieldValidator {
+            return new UniqueUserFieldValidator(
+                new UserRepository($c->get(EntityManager::class))
+            );
         },
 
         // Shared Symfony Cache pool. While neither feature is enabled the

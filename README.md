@@ -158,8 +158,8 @@ curl http://localhost:8080/user/1
 ```
 
 Once a user exists (persist an `App\Domain\User\User` entity and flush it,
-for example from a new migration), the endpoint returns the user without the
-`password` field:
+or create it with `POST /user`, see below), the endpoint returns the user
+without the `password` field:
 
 ```bash
 curl http://localhost:8080/user/1
@@ -176,6 +176,85 @@ curl http://localhost:8080/user/1
         "lastName": "Smith"
     }
 }
+```
+
+### Create a user
+
+```bash
+curl -X POST http://localhost:8080/user \
+  -H "Content-Type: application/json" \
+  -d '{"username":"anna","password":"password123","emailAddress":"anna@example.com","firstName":"Anna","lastName":"Smith"}'
+```
+
+```json
+{
+    "statusCode": 201,
+    "data": {
+        "id": 1,
+        "username": "anna",
+        "emailAddress": "anna@example.com",
+        "firstName": "Anna",
+        "lastName": "Smith"
+    }
+}
+```
+
+The password is stored hashed with bcrypt and never returned. Reusing an
+existing `username` or `emailAddress` is a validation error, reported per
+field, along with any other invalid field:
+
+```json
+{
+    "statusCode": 422,
+    "error": {
+        "type": "VALIDATION_ERROR",
+        "description": "The request is invalid.",
+        "details": {
+            "username": [
+                "This username is already in use."
+            ],
+            "emailAddress": [
+                "This email address is already in use."
+            ]
+        }
+    }
+}
+```
+
+Each field reports its own problems (`NotBlank`, min/max `Length`, `Email`,
+uniqueness, ...), grouped by field name under `error.details`.
+
+### Update a user
+
+`PATCH` only changes the fields present in the body:
+
+```bash
+curl -X PATCH http://localhost:8080/user/1 \
+  -H "Content-Type: application/json" \
+  -d '{"lastName":"Brown"}'
+```
+
+```json
+{
+    "statusCode": 200,
+    "data": {
+        "id": 1,
+        "username": "anna",
+        "emailAddress": "anna@example.com",
+        "firstName": "Anna",
+        "lastName": "Brown"
+    }
+}
+```
+
+### Delete a user
+
+```bash
+curl -i -X DELETE http://localhost:8080/user/1
+```
+
+```
+HTTP/1.1 204 No Content
 ```
 
 ### API documentation

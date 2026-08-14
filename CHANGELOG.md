@@ -29,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Doctrine Migrations support (`bin/doctrine.php migrations:*`).
 - Request validation through Symfony Validator (`Action::validateRequest()`
   and `HttpValidationException`).
+- User CRUD endpoints: `POST /user`, `PATCH /user/{id}` and `DELETE /user/{id}`
+  with validated request DTOs and bcrypt-hashed passwords. All request errors
+  are reported per field under `error.details` with a `422` status, including
+  uniqueness of the `username` and `emailAddress` (a user may keep their own
+  values when updating).
 - Environment-aware logging: per-environment log files in `logs/` and the
   `APP_ENV` setting.
 - Docker support: `Dockerfile` with Xdebug and `docker-compose.yml` (SQLite by

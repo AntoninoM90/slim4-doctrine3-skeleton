@@ -104,6 +104,115 @@ class OpenApiSpecTest extends TestCase
         );
     }
 
+    public function testCreateUserOperationDocumentsItsResponses(): void
+    {
+        $spec = $this->getSpec();
+
+        $operation = $spec['paths']['/user']['post'];
+
+        $this->assertSame([201, 409, 422, 500], array_keys($operation['responses']));
+        $this->assertSame(
+            '#/components/schemas/User',
+            $operation['responses'][201]['content']['application/json']['schema']['$ref']
+        );
+
+        $conflict = $operation['responses'][409]['content']['application/json'];
+
+        $this->assertSame('#/components/schemas/ErrorResponse', $conflict['schema']['$ref']);
+        $this->assertSame(409, $conflict['example']['statusCode']);
+        $this->assertSame('RESOURCE_CONFLICT', $conflict['example']['error']['type']);
+
+        $validation = $operation['responses'][422]['content']['application/json'];
+
+        $this->assertSame('#/components/schemas/ErrorResponse', $validation['schema']['$ref']);
+        $this->assertSame(422, $validation['example']['statusCode']);
+        $this->assertSame('VALIDATION_ERROR', $validation['example']['error']['type']);
+        $this->assertArrayHasKey('username', $validation['example']['error']['details']);
+        $this->assertArrayHasKey('password', $validation['example']['error']['details']);
+
+        $this->assertSame(
+            '#/components/responses/InternalServerError',
+            $operation['responses'][500]['$ref']
+        );
+
+        $requestSchema = $operation['requestBody']['content']['application/json']['schema'];
+
+        $this->assertTrue($operation['requestBody']['required']);
+        $this->assertSame(
+            ['username', 'password', 'emailAddress', 'firstName', 'lastName'],
+            $requestSchema['required']
+        );
+    }
+
+    public function testUpdateUserOperationDocumentsItsResponses(): void
+    {
+        $spec = $this->getSpec();
+
+        $operation = $spec['paths']['/user/{id}']['patch'];
+
+        $this->assertSame([200, 404, 409, 422, 500], array_keys($operation['responses']));
+        $this->assertSame(
+            '#/components/schemas/User',
+            $operation['responses'][200]['content']['application/json']['schema']['$ref']
+        );
+
+        $notFound = $operation['responses'][404]['content']['application/json'];
+
+        $this->assertSame('#/components/schemas/ErrorResponse', $notFound['schema']['$ref']);
+        $this->assertSame(404, $notFound['example']['statusCode']);
+        $this->assertSame('RESOURCE_NOT_FOUND', $notFound['example']['error']['type']);
+
+        $conflict = $operation['responses'][409]['content']['application/json'];
+
+        $this->assertSame('#/components/schemas/ErrorResponse', $conflict['schema']['$ref']);
+        $this->assertSame(409, $conflict['example']['statusCode']);
+        $this->assertSame('RESOURCE_CONFLICT', $conflict['example']['error']['type']);
+
+        $validation = $operation['responses'][422]['content']['application/json'];
+
+        $this->assertSame('#/components/schemas/ErrorResponse', $validation['schema']['$ref']);
+        $this->assertSame(422, $validation['example']['statusCode']);
+        $this->assertSame('VALIDATION_ERROR', $validation['example']['error']['type']);
+        $this->assertArrayHasKey('username', $validation['example']['error']['details']);
+
+        $this->assertSame(
+            '#/components/responses/InternalServerError',
+            $operation['responses'][500]['$ref']
+        );
+
+        $requestSchema = $operation['requestBody']['content']['application/json']['schema'];
+
+        $this->assertTrue($operation['requestBody']['required']);
+        $this->assertSame(
+            ['username', 'emailAddress', 'firstName', 'lastName'],
+            array_keys($requestSchema['properties'])
+        );
+        $this->assertArrayNotHasKey('password', $requestSchema['properties']);
+    }
+
+    public function testDeleteUserOperationDocumentsItsResponses(): void
+    {
+        $spec = $this->getSpec();
+
+        $operation = $spec['paths']['/user/{id}']['delete'];
+
+        $this->assertSame([204, 404, 500], array_keys($operation['responses']));
+
+        $this->assertSame('User deleted', $operation['responses'][204]['description']);
+        $this->assertArrayNotHasKey('content', $operation['responses'][204]);
+
+        $notFound = $operation['responses'][404]['content']['application/json'];
+
+        $this->assertSame('#/components/schemas/ErrorResponse', $notFound['schema']['$ref']);
+        $this->assertSame(404, $notFound['example']['statusCode']);
+        $this->assertSame('RESOURCE_NOT_FOUND', $notFound['example']['error']['type']);
+
+        $this->assertSame(
+            '#/components/responses/InternalServerError',
+            $operation['responses'][500]['$ref']
+        );
+    }
+
     public function testDocumentedSchemas(): void
     {
         $spec = $this->getSpec();

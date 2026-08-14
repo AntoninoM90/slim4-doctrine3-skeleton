@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 use App\Application\Actions\Health\HealthAction;
+use App\Application\Actions\User\CreateUserAction;
+use App\Application\Actions\User\DeleteUserAction;
 use App\Application\Actions\User\ListUsersAction;
+use App\Application\Actions\User\UpdateUserAction;
 use App\Application\Actions\User\ViewUserAction;
 use OpenApi\Generator;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -87,8 +90,11 @@ return function (App $app) use ($id) {
         return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
     });
 
-    $app->group('/user', function (Group $group) use($id) {
+    $app->group('/user', function (Group $group) use ($id) {
         $group->get('s', ListUsersAction::class)->setName('users-list');
+        $group->post('', CreateUserAction::class)->setName('user-create');
         $group->get($id, ViewUserAction::class)->setName('user-view');
+        $group->patch($id, UpdateUserAction::class)->setName('user-update');
+        $group->delete($id, DeleteUserAction::class)->setName('user-delete');
     });
 };

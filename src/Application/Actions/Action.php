@@ -96,6 +96,21 @@ abstract class Action
         /** @var T $request */
         $request = $requestClass::fromBody((array) $this->getFormData());
 
+        return $this->validateObject($request);
+    }
+
+    /**
+     * Validate an already built request DTO.
+     *
+     * @template T of AbstractRequest
+     *
+     * @param T $request
+     *
+     * @return T
+     * @throws HttpValidationException
+     */
+    protected function validateObject(AbstractRequest $request): AbstractRequest
+    {
         $violations = $this->validator->validate($request);
 
         if ($violations->count() > 0) {
@@ -133,6 +148,11 @@ abstract class Action
         $payload = new ActionPayload($statusCode);
 
         return $this->respond($payload);
+    }
+
+    protected function respondWithEmpty(int $statusCode = StatusCodeInterface::STATUS_NO_CONTENT): Response
+    {
+        return $this->response->withStatus($statusCode);
     }
 
     protected function respondWithError(

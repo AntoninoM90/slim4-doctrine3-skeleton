@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\User;
 
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 
@@ -29,6 +30,33 @@ class UserRepository
     public function findAllUsers(): array
     {
         return $this->repository->findAll();
+    }
+
+
+    public function createUser(User $user): void
+    {
+        $this->entityManager->persist($user);
+
+        try {
+            $this->entityManager->flush();
+        } catch (UniqueConstraintViolationException $e) {
+            throw new UserAlreadyExistsException($e);
+        }
+    }
+
+    public function updateUser(User $user): void
+    {
+        try {
+            $this->entityManager->flush();
+        } catch (UniqueConstraintViolationException $e) {
+            throw new UserAlreadyExistsException($e);
+        }
+    }
+
+    public function deleteUser(User $user): void
+    {
+        $this->entityManager->remove($user);
+        $this->entityManager->flush();
     }
 
     /**

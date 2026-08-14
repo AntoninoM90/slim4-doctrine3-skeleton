@@ -12,6 +12,7 @@ class ActionError implements JsonSerializable
     public const INSUFFICIENT_PRIVILEGES = 'INSUFFICIENT_PRIVILEGES';
     public const NOT_ALLOWED = 'NOT_ALLOWED';
     public const NOT_IMPLEMENTED = 'NOT_IMPLEMENTED';
+    public const RESOURCE_CONFLICT = 'RESOURCE_CONFLICT';
     public const RESOURCE_NOT_FOUND = 'RESOURCE_NOT_FOUND';
     public const SERVER_ERROR = 'SERVER_ERROR';
     public const UNAUTHENTICATED = 'UNAUTHENTICATED';

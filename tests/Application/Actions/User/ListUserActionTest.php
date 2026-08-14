@@ -4,24 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Application\Actions\User;
 
-use App\Domain\User\User;
-use Doctrine\ORM\EntityManager;
-use Psr\Container\ContainerInterface;
-use Tests\TestCase;
+use App\Application\Actions\ActionPayload;
 
-class ListUserActionTest extends TestCase
+class ListUserActionTest extends UserActionTestCase
 {
     public function testActionReturnsFirstPageByDefault()
     {
-        $app = $this->getAppInstance();
+        $app = $this->getAppWithErrorHandling();
 
-        /** @var ContainerInterface $container */
-        $container = $app->getContainer();
-
-        /** @var EntityManager $entityManager */
-        $entityManager = $container->get(EntityManager::class);
-
-        $this->seedUsers($entityManager);
+        $this->createUser(['firstName' => 'Anna', 'lastName' => 'Bianchi']);
+        $this->createUser(['firstName' => 'Beppe', 'lastName' => 'Verdi']);
+        $this->createUser(['firstName' => 'Carlo', 'lastName' => 'Rossi']);
 
         $request = $this->createRequest('GET', '/users');
         $response = $app->handle($request);
@@ -42,15 +35,11 @@ class ListUserActionTest extends TestCase
 
     public function testActionWithPagination()
     {
-        $app = $this->getAppInstance();
+        $app = $this->getAppWithErrorHandling();
 
-        /** @var ContainerInterface $container */
-        $container = $app->getContainer();
-
-        /** @var EntityManager $entityManager */
-        $entityManager = $container->get(EntityManager::class);
-
-        $this->seedUsers($entityManager);
+        $this->createUser(['firstName' => 'Anna', 'lastName' => 'Bianchi']);
+        $this->createUser(['firstName' => 'Beppe', 'lastName' => 'Verdi']);
+        $this->createUser(['firstName' => 'Carlo', 'lastName' => 'Rossi']);
 
         $request = $this->createRequest('GET', '/users', [], [], [], 'page=2&perPage=2');
         $response = $app->handle($request);
@@ -70,15 +59,11 @@ class ListUserActionTest extends TestCase
 
     public function testActionFallsBackAndClampsInvalidPaginationParameters()
     {
-        $app = $this->getAppInstance();
+        $app = $this->getAppWithErrorHandling();
 
-        /** @var ContainerInterface $container */
-        $container = $app->getContainer();
-
-        /** @var EntityManager $entityManager */
-        $entityManager = $container->get(EntityManager::class);
-
-        $this->seedUsers($entityManager);
+        $this->createUser(['firstName' => 'Anna', 'lastName' => 'Bianchi']);
+        $this->createUser(['firstName' => 'Beppe', 'lastName' => 'Verdi']);
+        $this->createUser(['firstName' => 'Carlo', 'lastName' => 'Rossi']);
 
         $request = $this->createRequest('GET', '/users', [], [], [], 'page=0&perPage=0');
         $response = $app->handle($request);
@@ -100,20 +85,26 @@ class ListUserActionTest extends TestCase
         $this->assertSame(100, $payload['data']['pagination']['perPage']);
     }
 
-    private function seedUsers(EntityManager $entityManager): void
+    public function testActionReturnsAllUsers()
     {
-        $entityManager->createQuery('DELETE FROM ' . User::class . ' u')->execute();
+        $app = $this->getAppWithErrorHandling();
 
-        $users = [
-            new User('anna', 'password', 'anna@example.com', 'Anna', 'Bianchi'),
-            new User('beppe', 'password', 'beppe@example.com', 'Beppe', 'Verdi'),
-            new User('carlo', 'password', 'carlo@example.com', 'Carlo', 'Rossi'),
-        ];
+        $this->createUser(['firstName' => 'Anna', 'lastName' => 'Bianchi']);
+        $this->createUser(['firstName' => 'Beppe', 'lastName' => 'Verdi']);
 
-        foreach ($users as $user) {
-            $entityManager->persist($user);
-        }
+        $request = $this->createRequest('GET', '/users');
+        $response = $app->handle($request);
 
-        $entityManager->flush();
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $payload = json_decode((string) $response->getBody(), true);
+
+        $this->assertIsArray($payload);
+        $this->assertIsArray($payload['data']);
+        $this->assertCount(2, $payload['data']['items']);
+        $this->assertSame(2, $payload['data']['pagination']['total']);
+        $this->assertSame(1, $payload['data']['pagination']['page']);
+        $this->assertSame(10, $payload['data']['pagination']['perPage']);
+        $this->assertSame(1, $payload['data']['pagination']['totalPages']);
     }
 }
