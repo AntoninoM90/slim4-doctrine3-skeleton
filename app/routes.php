@@ -93,8 +93,8 @@ return function (App $app) use ($id) {
 
     $app->group('/user', function (Group $group) use ($id) {
         $group->get('s', ListUsersAction::class)->setName('users-list');
-        $group->post('', CreateUserAction::class)->setName('user-create');
         $group->get($id, ViewUserAction::class)->setName('user-view');
+        $group->post('', CreateUserAction::class)->setName('user-create');
         $group->patch($id, UpdateUserAction::class)->setName('user-update');
         $group->patch($id . '/password', ChangePasswordAction::class)->setName('user-password');
         $group->delete($id, DeleteUserAction::class)->setName('user-delete');
