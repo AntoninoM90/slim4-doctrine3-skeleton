@@ -32,7 +32,9 @@ class UserRepository
         return $this->repository->findAll();
     }
 
-
+    /**
+     * @throws UserAlreadyExistsException
+     */
     public function createUser(User $user): void
     {
         $this->entityManager->persist($user);
@@ -44,6 +46,9 @@ class UserRepository
         }
     }
 
+    /**
+     * @throws UserAlreadyExistsException
+     */
     public function updateUser(User $user): void
     {
         try {
@@ -92,7 +97,6 @@ class UserRepository
      * @param int|null $lockVersion
      *
      * @return User|null
-     * @throws UserNotFoundException
      */
     public function findUserOfId(
         int $id,
@@ -105,27 +109,8 @@ class UserRepository
     /**
      * @param array<string, mixed> $criteria
      * @param array<string, 'ASC'|'asc'|'DESC'|'desc'>|null $orderBy
-     * @param mixed $limit
-     * @param mixed $offset
-     *
-     * @return User[]
-     * @throws UserNotFoundException
-     */
-    public function findUsersBy(
-        array $criteria,
-        ?array $orderBy = null,
-        $limit = null,
-        $offset = null
-    ): array {
-        return $this->repository->findBy($criteria, $orderBy, $limit, $offset);
-    }
-
-    /**
-     * @param array<string, mixed> $criteria
-     * @param array<string, 'ASC'|'asc'|'DESC'|'desc'>|null $orderBy
      *
      * @return User|null
-     * @throws UserNotFoundException
      */
     public function findOneUserBy(
         array $criteria,
