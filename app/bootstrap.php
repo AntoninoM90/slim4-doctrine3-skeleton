@@ -7,11 +7,22 @@ use App\Application\Handlers\ShutdownHandler;
 use App\Application\ResponseEmitter\ResponseEmitter;
 use App\Application\Settings\SettingsInterface;
 use DI\ContainerBuilder;
+use Dotenv\Dotenv;
 use Psr\Log\LoggerInterface;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
+
+// Load the .env file (if present) into the process environment so the
+// APP_* settings are available before the container is built.
+//
+// createUnsafeImmutable() is used (instead of the default createImmutable)
+// so the variables are written through putenv()/getenv(): this works even
+// when the PHP ini setting variables_order does not include "E" (in which
+// case $_ENV is never populated and createImmutable would silently load
+// nothing). The .env file is not treated as secret system configuration.
+Dotenv::createUnsafeImmutable(__DIR__ . '/..')->safeLoad();
 
 // Instantiate PHP-DI ContainerBuilder
 $containerBuilder = new ContainerBuilder();

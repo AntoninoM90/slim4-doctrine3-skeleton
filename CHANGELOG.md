@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- The `.env` file is now loaded into the process environment with
+  `vlucas/phpdotenv`, so the `APP_*` settings (CORS, rate limiting, security
+  headers, database, ...) are read from `.env` instead of only the system
+  environment. Loaded in `app/bootstrap.php` and `bin/doctrine.php` via
+  `createUnsafeImmutable()` so it keeps working even when the PHP setting
+  `variables_order` does not include `E`.
+
+### Added
+
 - Security headers middleware (`SecurityHeadersMiddleware`): configurable
   headers applied to every response, a `Content-Security-Policy` that uses a
   per-request nonce so the bundled Swagger UI keeps working without
