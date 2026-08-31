@@ -43,7 +43,7 @@
         "symfony/cache": "^7",
         "symfony/validator": "^7.4",
         "symfony/var-exporter": "^7",
-        "vlucas/phpdotenv": "^5.6",
+        "vlucas/phpdotenv": "^5.7",
         "zircote/swagger-php": "^6.6"
     },
     "require-dev": {
