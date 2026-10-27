@@ -50,7 +50,7 @@
         "jangregor/phpstan-prophecy": "^2.3",
         "phpspec/prophecy-phpunit": "^2.5",
         "phpstan/extension-installer": "^1.4.3",
-        "phpstan/phpstan": "^2.2",
+        "phpstan/phpstan": "^2.3",
         "phpunit/phpunit": "^12.5",
         "squizlabs/php_codesniffer": "^4.0"
     },
