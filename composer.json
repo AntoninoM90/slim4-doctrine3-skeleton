@@ -32,7 +32,7 @@
         "php": "^8.3",
         "ext-json": "*",
         "doctrine/dbal": "^4",
-        "doctrine/doctrine-bundle": "^2.16",
+        "doctrine/doctrine-bundle": "^3.3",
         "doctrine/migrations": "^3.9",
         "doctrine/orm": "^3",
         "fig/http-message-util": "^1.1",
