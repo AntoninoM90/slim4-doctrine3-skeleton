@@ -47,7 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `APP_ENV` setting.
 - Docker support: `Dockerfile` with Xdebug and `docker-compose.yml` (SQLite by
   default, with PostgreSQL/MySQL examples).
-- GitHub Actions workflow testing PHP 8.3, 8.4 and 8.5 with PHPStan, PHPCS
+- GitHub Actions workflow testing PHP 8.4 and 8.5 with PHPStan, PHPCS
   and Codecov coverage upload, plus Dependabot configuration.
 
 ### Changed
@@ -55,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Router bootstrapping now runs through `public/index.php`.
 - Doctrine ORM 3 / DBAL 4, Slim 4.15, PHP-DI 7, Monolog 3, swagger-php 6,
   PHPUnit 12 and Symfony Cache/Validator 7.
-- Minimum PHP version raised to 8.3.
+- Minimum PHP version raised to 8.4.
 - The `start` script, the Docker command and `.htaccess` disable `expose_php`
   so PHP version headers are not sent.
 

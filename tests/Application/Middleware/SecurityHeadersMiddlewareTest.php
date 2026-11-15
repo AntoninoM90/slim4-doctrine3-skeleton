@@ -111,7 +111,7 @@ class SecurityHeadersMiddlewareTest extends TestCase
             {
                 return (new SlimResponse(200))
                     ->withHeader('Server', 'Apache/2.4.62 (Ubuntu)')
-                    ->withHeader('X-Powered-By', 'PHP/8.3.0')
+                    ->withHeader('X-Powered-By', 'PHP/8.4.0')
                     ->withHeader('X-Custom', 'keep');
             }
         };
