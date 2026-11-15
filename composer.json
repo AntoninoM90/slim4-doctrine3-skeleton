@@ -31,6 +31,7 @@
     "require": {
         "php": "^8.4",
         "ext-json": "*",
+        "ext-mbstring": "*",
         "doctrine/dbal": "^4",
         "doctrine/doctrine-bundle": "^3.3",
         "doctrine/migrations": "^3.9",
