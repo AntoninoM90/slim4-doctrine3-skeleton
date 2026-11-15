@@ -31,6 +31,7 @@
     "require": {
         "php": "^8.4",
         "ext-json": "*",
+        "ext-mbstring": "*",
         "doctrine/dbal": "^4",
         "doctrine/doctrine-bundle": "^3.3",
         "doctrine/migrations": "^3.9",
@@ -51,7 +52,7 @@
         "phpspec/prophecy-phpunit": "^2.5",
         "phpstan/extension-installer": "^1.4.3",
         "phpstan/phpstan": "^2.3",
-        "phpunit/phpunit": "^12.5",
+        "phpunit/phpunit": "^13.4",
         "squizlabs/php_codesniffer": "^4.0"
     },
     "config": {
