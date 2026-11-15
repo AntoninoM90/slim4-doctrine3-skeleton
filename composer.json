@@ -1,6 +1,7 @@
 {
     "name": "antoninom90/slim4-doctrine3-skeleton",
     "description": "Slim Framework 4 Skeleton Application with Doctrine ORM 3",
+    "version": "0.1.0",
     "keywords": [
         "slim",
         "microframework",
