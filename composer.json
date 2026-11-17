@@ -33,7 +33,7 @@
         "ext-json": "*",
         "ext-mbstring": "*",
         "doctrine/dbal": "^4",
-        "doctrine/doctrine-bundle": "^3.3",
+        "doctrine/doctrine-bundle": "^3.4",
         "doctrine/migrations": "^3.9",
         "doctrine/orm": "^3",
         "fig/http-message-util": "^1.1",
