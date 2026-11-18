@@ -1,7 +1,7 @@
 # Slim Framework 4 Skeleton Application with Doctrine ORM 3
 
-[![Build Status](https://github.com/AntoninoM90/slim4-doctrine-skeleton/workflows/Tests/badge.svg)](https://github.com/AntoninoM90/slim4-doctrine-skeleton/actions)
-[![codecov](https://codecov.io/gh/AntoninoM90/slim4-doctrine-skeleton/graph/badge.svg)](https://codecov.io/gh/AntoninoM90/slim4-doctrine-skeleton)
+[![Build Status](https://github.com/AntoninoM90/slim4-doctrine3-skeleton/workflows/Tests/badge.svg)](https://github.com/AntoninoM90/slim4-doctrine3-skeleton/actions)
+[![codecov](https://codecov.io/gh/AntoninoM90/slim4-doctrine3-skeleton/graph/badge.svg)](https://codecov.io/gh/AntoninoM90/slim4-doctrine3-skeleton)
 
 Use this skeleton application to quickly setup and start working on a new Slim Framework 4 application. This application uses the latest Slim 4 with Slim PSR-7 implementation and PHP-DI container implementation. It also uses the Monolog logger.
 
